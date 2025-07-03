@@ -3,7 +3,7 @@ import TextField from '@mui/material/TextField';
 
 const CssTextField = styled(TextField)(({ theme }) => ({
   '& label': {
-    color: '#D0DCE0', // Светлый цвет неактивного лейбла
+    color: 'var(--main-color)', // Светлый цвет неактивного лейбла
   },
   '& label.Mui-focused': {
     color: '#A0AAB4', // Цвет активного лейбла

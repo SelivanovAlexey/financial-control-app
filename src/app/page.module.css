@@ -9,15 +9,37 @@
     gap: 50px;
 }
 
+.transactions_container {
+    font-weight: 400;
+    font-size: 32px;
+    text-align: center;
+    margin: 160px 80px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
 .card {
     height: 35vh;
     border-radius: 30px;
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    justify-content: space-between;
+    align-items: start;
     background-color: var(--foreground);
+    width: 100%;
+    padding: 3%;
+}
+
+.card_transactions {
+    border-radius: 30px;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: start;
+    background-color: var(--foreground);
+    padding: 4%;
 }
 
 .card_graph {
@@ -29,4 +51,44 @@
     align-items: center;
     background-color: var(--foreground);
     grid-row: span 2 / auto;
+    width: 100%;
+}
+
+.card_header {
+    font-size: calc(8px + 2vmin);
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+}
+
+.card_body {
+    width: 100%;
+    padding-right: 5%;
+}
+
+.transactions_card_body {
+    margin-top: 6%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 3vh;
+}
+
+.card_input {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 15px;
+    font-size: calc(16px + 1vmin);
+}
+
+.modal {
+    width: 32%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%)
 }
