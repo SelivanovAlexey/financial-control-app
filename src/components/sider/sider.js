@@ -13,21 +13,19 @@ const Sider = () => {
 
     const pathname = usePathname();
     const [homeIsActive, setHomeIsActive] = React.useState(false);
-    const [transactionsIsActive, setTransactionsIsActive] = React.useState(false);
     const [historyIsActive, setHistoryIsActive] = React.useState(false);
 
     useEffect(() => {
         setHomeIsActive(pathname === "/");
         setHistoryIsActive(pathname === "/history");
-        setTransactionsIsActive(pathname === "/transactions");
     }, [pathname]);
 
     return (
         <div className={styles.sider}>
-            <Box style={{ width: "80%", height: "40%", background: "var(--foreground)", borderRadius: "80px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "20px 0 20px 0", gap: "70px"}} >
+            <Box style={{ width: "80%", height: "28%", background: "var(--foreground)", borderRadius: "80px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "20px 0 20px 0", gap: "70px"}} >
                 <div className="sider__logo">
                     <Link href="/" style={{ textDecoration: "none" }}>
-                        <Tooltip title="Home">
+                        <Tooltip title="Дашборд">
                             <IconButton>
                             <HomeIcon className={`${styles.sider_button} ${homeIsActive ? styles.sider_button_active : styles.sider_button}`} style={{ width: "40px", height: "40px", transition: "all 0.2s ease-in-out" }}/>
                             </IconButton>
@@ -35,17 +33,8 @@ const Sider = () => {
                     </Link>
                 </div>
                 <div className="sider__logo">
-                    <Link href="/transactions" style={{ textDecoration: "none" }}>
-                        <Tooltip title="Transactions">
-                            <IconButton>
-                            <PaymentsIcon className={`${styles.sider_button} ${transactionsIsActive ? styles.sider_button_active : styles.sider_button}`} style={{ width: "40px", height: "40px", transition: "all 0.2s ease-in-out" }}/>
-                            </IconButton>
-                        </Tooltip>
-                    </Link>
-                </div>
-                <div className="sider__logo">
                     <Link href="/history" style={{ textDecoration: "none" }}>
-                        <Tooltip title="History">
+                        <Tooltip title="История операций">
                             <IconButton>
                             <HistoryIcon className={`${styles.sider_button} ${historyIsActive ? styles.sider_button_active : styles.sider_button}`} style={{ width: "40px", height: "40px", transition: "all 0.2s ease-in-out" }}/>
                             </IconButton>

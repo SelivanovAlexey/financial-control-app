@@ -22,7 +22,7 @@ export default function CustomDrawer() {
 
   return (
     <div>
-      <Tooltip title="Show notifications">
+      <Tooltip title="Показать уведомления">
                 <IconButton onClick={toggleDrawer(true)} aria-label="notifications" style={{width: "45px", height: "45px", border: "1px solid #2e2e2e"}}>
                     <NotificationsIcon className={styles.icon} style={{ width: "25px", height: "25px", transition: "all 0.2s ease-in-out"}}/>
                 </IconButton>

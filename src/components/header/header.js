@@ -35,7 +35,7 @@ const Header = () => {
             <div className="header__right" style={{ display: "flex", alignItems: "center", gap: "15px" }}>
                 <CustomDrawer />
                 <Box sx={{ flexGrow: 0 }}>
-                <Tooltip title="Open settings">
+                <Tooltip title="Настройки">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                     <Avatar className={styles.avatar} style={{ width: "45px", height: "45px", transition: "all 0.2s ease-in-out"}}/>
                 </IconButton>
