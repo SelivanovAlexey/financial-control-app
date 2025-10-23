@@ -9,6 +9,22 @@
     gap: 50px;
 }
 
+.table_header {
+    font-weight: 400;
+    font-size: 32px;
+    display: flex;
+    color: var(--font-color);
+    margin-bottom: 40px;
+}
+
+.table_container {
+    font-weight: 400;
+    font-size: 32px;
+    text-align: center;
+    margin: 64px 80px;
+    color: var(--font-color);
+}
+
 .transactions_container {
     font-weight: 400;
     font-size: 32px;
