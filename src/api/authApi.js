@@ -31,3 +31,17 @@ export function signUpUser (username, password, confirmPassword, email) {
         credentials: 'include',
     })
 }
+
+export function getAllExpenses () {
+    return fetch(`${URL}/api/expenses`, {
+        method: 'GET',
+        credentials: 'include',
+    })
+}
+
+export function getAllIncomes () {
+    return fetch(`${URL}/api/incomes`, {
+        method: 'GET',
+        credentials: 'include',
+    })
+}

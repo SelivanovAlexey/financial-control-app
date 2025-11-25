@@ -3,7 +3,7 @@ import StyledButton from "@/components/button/StyledButton";
 import styles from "../page.module.css";
 import { LineChart } from '@mui/x-charts/LineChart';
 import {PieChart, pieArcLabelClasses } from '@mui/x-charts/PieChart';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup, {
   toggleButtonGroupClasses,
@@ -13,43 +13,10 @@ import {Paper} from "@mui/material";
 import Modal from '@mui/material/Modal';
 import IncomesModal from "@/components/modal/IncomesModal";
 import ExpensesModal from "@/components/modal/ExpensesModal";
-
+import { useDispatch, useSelector } from "../store";
+import { fetchExpenses, fetchIncomes } from "@/reducers/userReducer";
 
 const margin = { right: 24, left: 24, bottom: 28 };
-
-const incomes = [40000, 30000, 20000, 27800, 18900, 23900, 34900];
-const expenses = [45000, 32000, 48000, 24800, 10000, 15000, 31200];
-
-const expensesInMonth = [{
-  label: 'Продукты',
-  value: 10000,
-}, {
-  label: 'Развлечения',
-  value: 5000,
-}, {
-  label: 'Медицина',
-  value: 3000,
-}, {
-  label: 'Подарки',
-  value: 7000,
-},
-{
-  label: 'Другое',
-  value: 2000,
-},
-]
-
-const expensesAll = expensesInMonth.reduce((acc, item) => acc + item.value, 0);
-
-const date = [
-  'Январь',
-  'Ферваль',
-  'Март',
-  'Апрель',
-  'Май',
-  'Июнь',
-  'Июль',
-];
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   [`& .${toggleButtonGroupClasses.grouped}`]: {
@@ -67,24 +34,186 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     },
 }));
 
+// Функция для фильтрации данных по периоду
+const filterDataByPeriod = (data, period) => {
+  if (!data || !Array.isArray(data)) return [];
+  
+  const now = new Date();
+  let startDate;
+  
+  switch (period) {
+    case 'left': // Неделя
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    case 'center': // Месяц
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      break;
+    case 'right': // Год
+      startDate = new Date(now.getFullYear(), 0, 1);
+      break;
+    default:
+      return data;
+  }
+  
+  return data.filter(item => {
+    if (!item.createDate) return false;
+    const itemDate = new Date(item.createDate * 1000);
+    return itemDate >= startDate;
+  });
+};
+
+// Функция для группировки данных по категориям
+const groupDataByCategory = (data) => {
+  if (!data || !Array.isArray(data)) return [];
+  
+  const grouped = data.reduce((acc, item) => {
+    const category = item.category || 'Другое';
+    if (!acc[category]) {
+      acc[category] = 0;
+    }
+    acc[category] += item.amount || 0;
+    return acc;
+  }, {});
+
+  return Object.entries(grouped).map(([label, value]) => ({
+    label,
+    value,
+    id: label
+  }));
+};
+
+// Функция для получения данных по временным периодам
+const getDataByTimePeriod = (data, period) => {
+  if (!data || !Array.isArray(data)) return { data: Array(7).fill(0), labels: Array(7).fill('') };
+  
+  const now = new Date();
+  let periods = [];
+  let labels = [];
+  
+  switch (period) {
+    case 'left': // Неделя (последние 7 дней)
+      periods = Array(7).fill(0);
+      labels = Array(7).fill('');
+      
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        labels[6-i] = date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+        
+        data.forEach(item => {
+          if (item.createDate) {
+            const itemDate = new Date(item.createDate * 1000);
+            if (itemDate.toDateString() === date.toDateString()) {
+              periods[6-i] += item.amount || 0;
+            }
+          }
+        });
+      }
+      return { data: periods, labels };
+
+    case 'center': // Месяц (последние 4 недели)
+      periods = Array(4).fill(0);
+      labels = Array(4).fill('');
+      
+      for (let i = 3; i >= 0; i--) {
+        const weekStart = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
+        const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
+        labels[3-i] = `Неделя ${4-i}`;
+        
+        data.forEach(item => {
+          if (item.createDate) {
+            const itemDate = new Date(item.createDate * 1000);
+            if (itemDate >= weekStart && itemDate <= weekEnd) {
+              periods[3-i] += item.amount || 0;
+            }
+          }
+        });
+      }
+      return { data: periods, labels };
+
+    case 'right': // Год (последние 12 месяцев)
+      periods = Array(12).fill(0);
+      labels = Array(12).fill('');
+      
+      for (let i = 11; i >= 0; i--) {
+        const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        labels[11-i] = month.toLocaleDateString('ru-RU', { month: 'short' });
+        
+        data.forEach(item => {
+          if (item.createDate) {
+            const itemDate = new Date(item.createDate * 1000);
+            if (itemDate.getMonth() === month.getMonth() && 
+                itemDate.getFullYear() === month.getFullYear()) {
+              periods[11-i] += item.amount || 0;
+            }
+          }
+        });
+      }
+      return { data: periods, labels };
+
+    default:
+      return { data: Array(7).fill(0), labels: Array(7).fill('') };
+  }
+};
+
+// Функция для расчета общей суммы
+const calculateTotalAmount = (data) => {
+  if (!data || !Array.isArray(data)) return 0;
+  return data.reduce((total, item) => total + (item.amount || 0), 0);
+};
+
 export default function Home() {
-  const [interval, setInterval] = useState('left');
+  const dispatch = useDispatch();
+  const { expenses, incomes, isLoading, userError } = useSelector(state => state.user);
+  
+  const [period, setPeriod] = useState('center'); // по умолчанию "Месяц"
   const [incomesModalOpen, setIncomesModalOpen] = useState(false);
   const [expensesModalOpen, setExpensesModalOpen] = useState(false);
+  
   const handleIncomeModalOpen = () => setIncomesModalOpen(true);
   const handleIncomeModalClose = () => setIncomesModalOpen(false);
   const handleExpensesModalOpen = () => setExpensesModalOpen(true);
   const handleExpensesModalClose = () => setExpensesModalOpen(false);
 
-  const handleChange = (event) => {
-    setInterval(event.target.value);
+  const handlePeriodChange = (event, newPeriod) => {
+    if (newPeriod !== null) {
+      setPeriod(newPeriod);
+    }
   };
+
+  // Загружаем расходы при монтировании компонента
+  useEffect(() => {
+    dispatch(fetchExpenses());
+    dispatch(fetchIncomes());
+  }, [dispatch]);
+
+  // Фильтруем данные по выбранному периоду
+  const filteredExpenses = filterDataByPeriod(expenses, period);
+  const filteredIncomes = filterDataByPeriod(incomes, period);
+  
+  // Рассчитываем данные для графиков
+  const expensesAll = calculateTotalAmount(filteredExpenses);
+  const incomesAll = calculateTotalAmount(filteredIncomes);
+  
+  const expensesByCategory = groupDataByCategory(filteredExpenses);
+  const incomesByCategory = groupDataByCategory(filteredIncomes);
+  
+  const expensesChartData = getDataByTimePeriod(filteredExpenses, period);
+  const incomesChartData = getDataByTimePeriod(filteredIncomes, period);
+
+  // Показываем загрузку или ошибку
+  if (isLoading) {
+    return <div className={styles.container}>Загрузка...</div>;
+  }
+
+  if (userError) {
+    return <div className={styles.container}>Ошибка: {userError}</div>;
+  }
 
   return (
     <div className={styles.container}>
       <div className={styles.card_graph}>
         <div style={{display: "flex", justifyContent: "space-between", width: "100%", padding: "1.5rem 1.5rem 0 1.5rem", fontSize: "calc(40px + 2vmin)", fontWeight: "bold"}}>
-          {expensesAll} ₽
+          {expensesAll.toLocaleString('ru-RU')} ₽
           <div width="30%">
             <Paper
               elevation={0}
@@ -94,13 +223,14 @@ export default function Home() {
               }}
             >
               <StyledToggleButtonGroup
-                value={interval}
+                value={period}
                 exclusive
-                onChange={handleChange}
+                onChange={handlePeriodChange}
                 aria-label="text alignment"
-                sx={{display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr',
-              }}
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr 1fr',
+                }}
               >
                 <ToggleButton value="left" aria-label="left aligned" sx={{ color: "var(--main-color)", '&.Mui-selected': { color: "var(--font-color)", backgroundColor: "var(--accent-color)", transition: 'all 0.3s ease-in-out', '&:hover': { backgroundColor: "var(--accent-color)"}}}}>
                   Неделя
@@ -141,32 +271,36 @@ export default function Home() {
               strokeWidth: 0
             },
             [`& .${pieArcLabelClasses.root}`]: {
-      fontWeight: 'bold',
-      fill: 'var(--font-color)',
-      fontSize: '18px'
-    },
+              fontWeight: 'bold',
+              fill: 'var(--font-color)',
+              fontSize: '18px'
+            },
             width: "100%",
           }}
           series={[
             {
-              data: expensesInMonth,
+              data: expensesByCategory,
               innerRadius: "80%",
               outerRadius: "100%",
-              // startAngle: -90,
-              // endAngle: 90,
               paddingAngle: 5,
               cornerRadius: 5,
               highlightScope: { fade: 'global', highlight: 'item' },
               arcLabelRadius: "60%",
-              arcLabel: (item) => `${(item.value / expensesAll * 100).toFixed(2)} %`,
+              arcLabel: (item) => expensesAll > 0 ? `${(item.value / expensesAll * 100).toFixed(2)} %` : '0%',
             }
           ]}
         />
       </div>
+      
       <div className={styles.card}>
         <div className={styles.card_header}>
           Доходы
-          <StyledButton onClick={handleIncomeModalOpen}>Добавить</StyledButton>
+          <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+            <div style={{fontSize: 'calc(16px + 1vmin)', fontWeight: 'bold'}}>
+              {incomesAll.toLocaleString('ru-RU')} ₽
+            </div>
+            <StyledButton onClick={handleIncomeModalOpen}>Добавить</StyledButton>
+          </div>
           <Modal
             open={incomesModalOpen}
             onClose={handleIncomeModalClose}
@@ -182,13 +316,12 @@ export default function Home() {
           <LineChart
             height={250}
             series={[
-              { data: incomes, color: `var(--accent-color)` },
+              { data: incomesChartData.data, color: `var(--accent-color)` },
             ]}
             xAxis={[
               {
                 scaleType: 'point',
-                data: date,
-                
+                data: incomesChartData.labels,
               }
             ]}
             yAxis={[
@@ -199,22 +332,18 @@ export default function Home() {
             margin={margin}
             grid={{ vertical: true, horizontal: true }}
             sx={{
-                //change left yAxis label styles
-              "& .MuiChartsAxis-left .MuiChartsAxis-tickLabel":{
-                fill:"#fff",
-                opacity:0.7
-              },
-                // change bottom label styles
+                "& .MuiChartsAxis-left .MuiChartsAxis-tickLabel":{
+                  fill:"#fff",
+                  opacity:0.7
+                },
                 "& .MuiChartsAxis-bottom .MuiChartsAxis-tickLabel":{
                     fill:"#fff",
                     opacity:0.7
                 },
-                  // bottomAxis Line Styles
                 "& .MuiChartsAxis-bottom .MuiChartsAxis-line":{
                   stroke:"#fff",
                   opacity:0.7
                 },
-                // leftAxis Line Styles
                 "& .MuiChartsAxis-left .MuiChartsAxis-line":{
                   stroke:"#fff",
                   opacity:0.7
@@ -223,10 +352,16 @@ export default function Home() {
           />
         </div>
       </div>
+      
       <div className={styles.card}>
         <div className={styles.card_header}>
           Расходы
-          <StyledButton onClick={handleExpensesModalOpen}>Добавить</StyledButton>
+          <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+            <div style={{fontSize: 'calc(16px + 1vmin)', fontWeight: 'bold'}}>
+              {expensesAll.toLocaleString('ru-RU')} ₽
+            </div>
+            <StyledButton onClick={handleExpensesModalOpen}>Добавить</StyledButton>
+          </div>
           <Modal
             open={expensesModalOpen}
             onClose={handleExpensesModalClose}
@@ -242,13 +377,12 @@ export default function Home() {
           <LineChart
             height={250}
             series={[
-              { data: expenses, color: `var(--red-color)` },
+              { data: expensesChartData.data, color: `var(--red-color)` },
             ]}
             xAxis={[
               {
                 scaleType: 'point',
-                data: date,
-                
+                data: expensesChartData.labels,
               }
             ]}
             yAxis={[
@@ -259,22 +393,18 @@ export default function Home() {
             margin={margin}
             grid={{ vertical: true, horizontal: true }}
             sx={{
-                //change left yAxis label styles
-              "& .MuiChartsAxis-left .MuiChartsAxis-tickLabel":{
-                fill:"#fff",
-                opacity:0.7
-              },
-                // change bottom label styles
+                "& .MuiChartsAxis-left .MuiChartsAxis-tickLabel":{
+                  fill:"#fff",
+                  opacity:0.7
+                },
                 "& .MuiChartsAxis-bottom .MuiChartsAxis-tickLabel":{
                     fill:"#fff",
                     opacity:0.7
                 },
-                  // bottomAxis Line Styles
                 "& .MuiChartsAxis-bottom .MuiChartsAxis-line":{
                   stroke:"#fff",
                   opacity:0.7
                 },
-                // leftAxis Line Styles
                 "& .MuiChartsAxis-left .MuiChartsAxis-line":{
                   stroke:"#fff",
                   opacity:0.7
