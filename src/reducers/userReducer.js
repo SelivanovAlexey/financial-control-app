@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { loginUser, logoutUser, signUpUser, getAllExpenses, getAllIncomes } from "../api/authApi";
+import { loginUser, logoutUser, signUpUser, getAllExpenses, getAllIncomes, createExpense, createIncome } from "../api/authApi";
 
 export const userLogin = createAsyncThunk(
   'user/loginUser',
@@ -44,14 +44,16 @@ export const fetchExpenses = createAsyncThunk(
     if (signal.aborted) {
       throw new Error('Request aborted');
     }
-    if (response.status === 200) {
+    
+    if (response.ok) {
       const data = await response.json();
+      
       const filteredData = userId 
         ? data.filter(expense => expense.user_id === userId)
         : data;
       return filteredData;
     } else {
-      throw new Error('Failed to get expenses');
+      throw new Error(`Failed to get expenses: ${response.status}`);
     }
   }
 );
@@ -63,14 +65,46 @@ export const fetchIncomes = createAsyncThunk(
     if (signal.aborted) {
       throw new Error('Request aborted');
     }
-    if (response.status === 200) {
+    
+    if (response.ok) {
       const data = await response.json();
+      
       const filteredData = userId 
         ? data.filter(income => income.user_id === userId)
         : data;
       return filteredData;
     } else {
-      throw new Error('Failed to get incomes');
+      throw new Error(`Failed to get incomes: ${response.status}`);
+    }
+  }
+);
+
+export const fetchCreateExpense = createAsyncThunk(
+  'expense/createExpense',
+  async (data) => {
+    const response = await createExpense(data);
+    
+    if (response.ok) {
+      const result = await response.json();
+      return result;
+    } else {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to create expense');
+    }
+  }
+);
+
+export const fetchCreateIncome = createAsyncThunk(
+  'income/createIncome',
+  async (data) => {
+    const response = await createIncome(data);
+    
+    if (response.ok) {
+      const result = await response.json();
+      return result;
+    } else {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to create income');
     }
   }
 )
@@ -88,14 +122,6 @@ const initialState = {
 const userSlice = createSlice({
   name: 'user',
   initialState,
-  reducers: {
-    setUser: (state, action) => {
-      state.isAuthenticated = true;
-      state.expenses = action.payload.expenses;
-      state.incomes = action.payload.incomes;
-      state.name = action.payload.name;
-    }
-  },
   extraReducers: (builder) => {
     builder
       .addCase(userLogin.pending, (state) => {
@@ -181,6 +207,50 @@ const userSlice = createSlice({
         state.isLoading = false;
         state.userError = action.error.message || 'Failed to fetch incomes';
       })
+
+      .addCase(fetchCreateExpense.pending, (state) => {
+        state.userError = null;
+        state.isLoading = true;
+      })
+      .addCase(fetchCreateExpense.fulfilled, (state, action) => {
+        // Используем timestamp из даты формы, а не из ответа сервера
+        const formDate = action.meta.arg.createDate; // ISO строка из формы
+        const timestampFromForm = Math.floor(new Date(formDate).getTime() / 1000);
+        
+        const expenseWithCorrectDate = {
+          ...action.payload,
+          createDate: timestampFromForm
+        };
+        
+        state.expenses.push(expenseWithCorrectDate);
+        state.userError = null;
+        state.isLoading = false;
+      })
+      .addCase(fetchCreateExpense.rejected, (state, action) => {
+        state.userError = action.error.message || 'Failed to create expense';
+      })
+
+      .addCase(fetchCreateIncome.pending, (state) => {
+        state.userError = null;
+        state.isLoading = true;
+      })
+      .addCase(fetchCreateIncome.fulfilled, (state, action) => {
+        // Используем timestamp из даты формы, а не из ответа сервера
+        const formDate = action.meta.arg.createDate; // ISO строка из формы
+        const timestampFromForm = Math.floor(new Date(formDate).getTime() / 1000);
+        
+        const incomeWithCorrectDate = {
+          ...action.payload,
+          createDate: timestampFromForm
+        };
+        
+        state.incomes.push(incomeWithCorrectDate);
+        state.userError = null;
+        state.isLoading = false;
+      })
+      .addCase(fetchCreateIncome.rejected, (state, action) => {
+        state.userError = action.error.message || 'Failed to create income';
+      });
   },
 });
 

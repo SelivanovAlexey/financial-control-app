@@ -19,7 +19,9 @@ function createData(id, date, category, description, amount, type) {
 // Функция для преобразования timestamp в формат даты
 const formatDate = (timestamp) => {
   if (!timestamp) return '';
+
   const date = new Date(timestamp * 1000);
+
   const day = date.getDate().toString().padStart(2, '0');
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const year = date.getFullYear();
@@ -30,50 +32,47 @@ export default function History() {
   const dispatch = useDispatch();
   const { expenses, incomes, isLoading, userError } = useSelector(state => state.user);
   
-  // Загружаем данные при монтировании компонента
   useEffect(() => {
     dispatch(fetchExpenses());
+    dispatch(fetchIncomes());
   }, [dispatch]);
 
-  // Объединяем расходы и доходы в одну таблицу
-  const allTransactions = React.useMemo(() => {
-    const expenseRows = expenses.map(expense => 
-      createData(
-        `expense_${expense.id}`,
-        formatDate(expense.createDate),
-        expense.category,
-        expense.description,
-        -expense.amount, // отрицательное значение для расходов
-        'expense'
-      )
-    );
+  const sortedRows = React.useMemo(() => {
+    // Создаем массив всех транзакций с сохранением timestamp для сортировки
+    const allTransactions = [];
 
-    const incomeRows = (incomes || []).map(income => 
-      createData(
-        `income_${income.id}`,
-        formatDate(income.createDate),
-        income.category,
-        income.description,
-        income.amount, // положительное значение для доходов
-        'income'
-      )
-    );
+    // Добавляем расходы
+    expenses.forEach(expense => {
+      allTransactions.push({
+        id: `expense_${expense.id}`,
+        date: formatDate(expense.createDate),
+        category: expense.category,
+        description: expense.description,
+        amount: -expense.amount,
+        type: 'expense',
+        timestamp: expense.createDate
+      });
+    });
 
-    return [...expenseRows, ...incomeRows];
+    // Добавляем доходы
+    (incomes || []).forEach(income => {
+      allTransactions.push({
+        id: `income_${income.id}`,
+        date: formatDate(income.createDate),
+        category: income.category,
+        description: income.description,
+        amount: income.amount,
+        type: 'income',
+        timestamp: income.createDate
+      });
+    });
+
+    const sorted = [...allTransactions].sort((a, b) => {
+      return b.timestamp - a.timestamp; // от большего к меньшему
+    });
+
+    return sorted;
   }, [expenses, incomes]);
-
-  // Сортируем по дате (от новых к старым)
-  const sortedRows = [...allTransactions].sort((a, b) => {
-    const parseDate = (dateStr) => {
-      const [day, month, year] = dateStr.split('-').map(Number);
-      return new Date(year, month - 1, day);
-    };
-    
-    const dateA = parseDate(a.date);
-    const dateB = parseDate(b.date);
-    
-    return dateB - dateA;
-  });
 
   // Показываем загрузку
   if (isLoading) {

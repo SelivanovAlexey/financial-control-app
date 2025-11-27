@@ -45,3 +45,25 @@ export function getAllIncomes () {
         credentials: 'include',
     })
 }
+
+export function createExpense (data) {
+    return fetch(`${URL}/api/expenses`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        credentials: 'include',
+    })
+}
+
+export function createIncome (data) {
+    return fetch(`${URL}/api/incomes`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        credentials: 'include',
+    })
+}

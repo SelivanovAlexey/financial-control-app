@@ -15,6 +15,7 @@ import IncomesModal from "@/components/modal/IncomesModal";
 import ExpensesModal from "@/components/modal/ExpensesModal";
 import { useDispatch, useSelector } from "../store";
 import { fetchExpenses, fetchIncomes } from "@/reducers/userReducer";
+import CircularProgress from '@mui/material/CircularProgress';
 
 const margin = { right: 24, left: 24, bottom: 28 };
 
@@ -56,7 +57,8 @@ const filterDataByPeriod = (data, period) => {
   }
   
   return data.filter(item => {
-    if (!item.createDate) return false;
+    if (!item?.createDate) return false;
+    // Преобразуем timestamp в Date объект
     const itemDate = new Date(item.createDate * 1000);
     return itemDate >= startDate;
   });
@@ -110,19 +112,30 @@ const getDataByTimePeriod = (data, period) => {
       }
       return { data: periods, labels };
 
-    case 'center': // Месяц (последние 4 недели)
+    case 'center': // Месяц (последние 4 недели) - ИСПРАВЛЕНО
       periods = Array(4).fill(0);
       labels = Array(4).fill('');
       
+      // Получаем начало текущей недели (понедельник)
+      const startOfWeek = (date) => {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+        return new Date(d.setDate(diff));
+      };
+      
       for (let i = 3; i >= 0; i--) {
         const weekStart = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
-        const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
-        labels[3-i] = `Неделя ${4-i}`;
+        const weekStartAdjusted = startOfWeek(weekStart);
+        const weekEnd = new Date(weekStartAdjusted.getTime() + 6 * 24 * 60 * 60 * 1000);
+        
+        // Форматируем метку для отображения
+        labels[3-i] = `${weekStartAdjusted.getDate()}-${weekEnd.getDate()} ${weekStartAdjusted.toLocaleDateString('ru-RU', { month: 'short' })}`;
         
         data.forEach(item => {
           if (item.createDate) {
             const itemDate = new Date(item.createDate * 1000);
-            if (itemDate >= weekStart && itemDate <= weekEnd) {
+            if (itemDate >= weekStartAdjusted && itemDate <= weekEnd) {
               periods[3-i] += item.amount || 0;
             }
           }
@@ -202,7 +215,9 @@ export default function Home() {
 
   // Показываем загрузку или ошибку
   if (isLoading) {
-    return <div className={styles.container}>Загрузка...</div>;
+    return <div style={{margin: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
+      <CircularProgress size={100}/>
+    </div>;
   }
 
   if (userError) {
@@ -280,6 +295,8 @@ export default function Home() {
           series={[
             {
               data: expensesByCategory,
+              startAngle: -270,
+              endAngle: 90,
               innerRadius: "80%",
               outerRadius: "100%",
               paddingAngle: 5,

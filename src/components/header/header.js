@@ -31,9 +31,10 @@ const Header = () => {
 
     return (
         <div className={styles.header}>
-            <StyledMainInput style={{ width: "20%"}} placeholder="Поиск" />
+            {/* <StyledMainInput style={{ width: "20%"}} placeholder="Поиск" /> */}
             <div className="header__right" style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-                <CustomDrawer />
+                {/* <CustomDrawer /> */}
+                Username
                 <Box sx={{ flexGrow: 0 }}>
                 <Tooltip title="Настройки">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
