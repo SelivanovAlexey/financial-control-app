@@ -16,6 +16,8 @@ import ExpensesModal from "@/components/modal/ExpensesModal";
 import { useDispatch, useSelector } from "../store";
 import { fetchExpenses, fetchIncomes } from "@/reducers/userReducer";
 import CircularProgress from '@mui/material/CircularProgress';
+import { useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 const margin = { right: 24, left: 24, bottom: 28 };
 
@@ -40,28 +42,44 @@ const filterDataByPeriod = (data, period) => {
   if (!data || !Array.isArray(data)) return [];
   
   const now = new Date();
-  let startDate;
   
   switch (period) {
-    case 'left': // Неделя
-      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      break;
-    case 'center': // Месяц
-      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-      break;
-    case 'right': // Год
-      startDate = new Date(now.getFullYear(), 0, 1);
-      break;
+    case 'left': // Последние 7 дней
+      const weekAgo = new Date();
+      weekAgo.setDate(now.getDate() - 7);
+      weekAgo.setHours(0, 0, 0, 0);
+      
+      return data.filter(item => {
+        if (!item?.createDate) return false;
+        const itemDate = new Date(item.createDate * 1000);
+        return itemDate >= weekAgo;
+      });
+      
+    case 'center': // Последние 30 дней (а не текущий календарный месяц)
+      const monthAgo = new Date();
+      monthAgo.setDate(now.getDate() - 30);
+      monthAgo.setHours(0, 0, 0, 0);
+      
+      return data.filter(item => {
+        if (!item?.createDate) return false;
+        const itemDate = new Date(item.createDate * 1000);
+        return itemDate >= monthAgo;
+      });
+      
+    case 'right': // Последние 365 дней (а не текущий календарный год)
+      const yearAgo = new Date();
+      yearAgo.setDate(now.getDate() - 365);
+      yearAgo.setHours(0, 0, 0, 0);
+      
+      return data.filter(item => {
+        if (!item?.createDate) return false;
+        const itemDate = new Date(item.createDate * 1000);
+        return itemDate >= yearAgo;
+      });
+      
     default:
       return data;
   }
-  
-  return data.filter(item => {
-    if (!item?.createDate) return false;
-    // Преобразуем timestamp в Date объект
-    const itemDate = new Date(item.createDate * 1000);
-    return itemDate >= startDate;
-  });
 };
 
 // Функция для группировки данных по категориям
@@ -112,36 +130,24 @@ const getDataByTimePeriod = (data, period) => {
       }
       return { data: periods, labels };
 
-    case 'center': // Месяц (последние 4 недели) - ИСПРАВЛЕНО
-      periods = Array(4).fill(0);
-      labels = Array(4).fill('');
-      
-      // Получаем начало текущей недели (понедельник)
-      const startOfWeek = (date) => {
-        const d = new Date(date);
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-        return new Date(d.setDate(diff));
-      };
-      
-      for (let i = 3; i >= 0; i--) {
-        const weekStart = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
-        const weekStartAdjusted = startOfWeek(weekStart);
-        const weekEnd = new Date(weekStartAdjusted.getTime() + 6 * 24 * 60 * 60 * 1000);
-        
-        // Форматируем метку для отображения
-        labels[3-i] = `${weekStartAdjusted.getDate()}-${weekEnd.getDate()} ${weekStartAdjusted.toLocaleDateString('ru-RU', { month: 'short' })}`;
-        
-        data.forEach(item => {
-          if (item.createDate) {
-            const itemDate = new Date(item.createDate * 1000);
-            if (itemDate >= weekStartAdjusted && itemDate <= weekEnd) {
-              periods[3-i] += item.amount || 0;
-            }
-          }
-        });
+    case 'center': // Месяц (последние 30 дней)
+  periods = Array(30).fill(0);
+  labels = Array(30).fill('');
+  
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    labels[29-i] = date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    
+    data.forEach(item => {
+      if (item.createDate) {
+        const itemDate = new Date(item.createDate * 1000);
+        if (itemDate.toDateString() === date.toDateString()) {
+          periods[29-i] += item.amount || 0;
+        }
       }
-      return { data: periods, labels };
+    });
+  }
+  return { data: periods, labels };
 
     case 'right': // Год (последние 12 месяцев)
       periods = Array(12).fill(0);
@@ -175,6 +181,11 @@ const calculateTotalAmount = (data) => {
 };
 
 export default function Home() {
+  const theme = useTheme();
+  const isLaptop = useMediaQuery(theme.breakpoints.up('lg')); // 1280px и выше
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'lg')); // 600px - 1279px
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // до 600px
+
   const dispatch = useDispatch();
   const { expenses, incomes, isLoading, userError } = useSelector(state => state.user);
   
@@ -227,8 +238,13 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <div className={styles.card_graph}>
-        <div style={{display: "flex", justifyContent: "space-between", width: "100%", padding: "1.5rem 1.5rem 0 1.5rem", fontSize: "calc(40px + 2vmin)", fontWeight: "bold"}}>
-          {expensesAll.toLocaleString('ru-RU')} ₽
+        <div className={styles.card_graph_header}>
+          <div style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "start"}}>
+            {expensesAll.toLocaleString('ru-RU')} ₽
+            <div style={{width: "auto", fontSize: "calc(8px + 2vmin)", fontWeight: "normal"}}>
+            Траты
+            </div>
+          </div>
           <div width="30%">
             <Paper
               elevation={0}
@@ -260,53 +276,55 @@ export default function Home() {
             </Paper>
           </div>
         </div>
-        <div style={{display: "flex", justifyContent: "start", width: "100%", padding: "0 0 0 1.5rem", fontSize: "calc(8px + 2vmin)"}}>
-          Траты
-        </div>
-        <PieChart
-          slotProps={{
-            legend: {
-              sx: {
-                width: "100%",
-                display: "flex",
-                justifyContent: "center",
-                color: "var(--font-color)",
-                fontSize: "14px",
-                padding: "2rem"      
-              },
-              direction: 'horizontal',
-              position: { 
-                vertical: 'bottom',
-                horizontal: 'center'
+        <div className={styles.chart_container}>
+          <PieChart
+            slotProps={{
+              legend: {
+                sx: {
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  color: "var(--font-color)",
+                  fontSize: isMobile ? "12px" : "14px",
+                  padding: isMobile ? "1rem" : "2rem",
+                },
+                direction: 'horizontal',
+                position: { 
+                  vertical: 'bottom',
+                  horizontal: 'center'
+                }
               }
-            }
-          }}
-          sx={{
-            "& .css-yqw5vn-MuiPieArc-root":{
-              strokeWidth: 0
-            },
-            [`& .${pieArcLabelClasses.root}`]: {
-              fontWeight: 'bold',
-              fill: 'var(--font-color)',
-              fontSize: '18px'
-            },
-            width: "100%",
-          }}
-          series={[
-            {
-              data: expensesByCategory,
-              startAngle: -270,
-              endAngle: 90,
-              innerRadius: "80%",
-              outerRadius: "100%",
-              paddingAngle: 5,
-              cornerRadius: 5,
-              highlightScope: { fade: 'global', highlight: 'item' },
-              arcLabelRadius: "60%",
-              arcLabel: (item) => expensesAll > 0 ? `${(item.value / expensesAll * 100).toFixed(2)} %` : '0%',
-            }
-          ]}
-        />
+            }}
+            sx={{
+              width: "100%",
+              height: "100%",
+              "& .css-yqw5vn-MuiPieArc-root": {
+                strokeWidth: 0
+              },
+              [`& .${pieArcLabelClasses.root}`]: {
+                fontWeight: 'bold',
+                fill: 'var(--font-color)',
+                fontSize: isMobile ? '14px' : '18px'
+              },
+            }}
+            // Убираем фиксированную высоту из компонента
+            // и используем CSS для управления размерами
+            series={[
+              {
+                data: expensesByCategory,
+                startAngle: -270,
+                endAngle: 90,
+                innerRadius: isMobile ? "60%" : isTablet ? "70%" : "80%",
+                outerRadius: isMobile ? "80%" : isTablet ? "90%" : "100%",
+                paddingAngle: 5,
+                cornerRadius: 5,
+                highlightScope: { fade: 'global', highlight: 'item' },
+                arcLabelRadius: isMobile ? "50%" : isTablet ? "55%" : "60%",
+                arcLabel: (item) => expensesAll > 0 ? `${(item.value / expensesAll * 100).toFixed(2)} %` : '0%',
+              }
+            ]}
+          />
+        </div>
       </div>
       
       <div className={styles.card}>
