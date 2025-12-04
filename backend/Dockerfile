@@ -14,9 +14,8 @@ FROM eclipse-temurin:21
 WORKDIR /app
 
 COPY --from=build /app/core/target/*.jar financial-app.jar
-COPY entrypoint.sh .
+COPY --from=build /app/entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
 EXPOSE 8484
-
 ENTRYPOINT ["./entrypoint.sh"]
