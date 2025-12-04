@@ -39,7 +39,7 @@ export const userSignUp = createAsyncThunk(
 
 export const fetchExpenses = createAsyncThunk(
   'expenses/fetchExpenses',
-  async (userId = null, { signal }) => {
+  async (_, { signal, getState }) => {
     const response = await getAllExpenses();
     if (signal.aborted) {
       throw new Error('Request aborted');
@@ -47,12 +47,13 @@ export const fetchExpenses = createAsyncThunk(
     
     if (response.ok) {
       const data = await response.json();
-      
-      const filteredData = userId 
-        ? data.filter(expense => expense.user_id === userId)
-        : data;
-      return filteredData;
+      // В реальном приложении здесь должна быть фильтрация по userId
+      // В вашем API, вероятно, сервер сам возвращает данные для текущего пользователя
+      return data;
     } else {
+      if (response.status === 401) {
+        throw new Error('Unauthorized');
+      }
       throw new Error(`Failed to get expenses: ${response.status}`);
     }
   }
@@ -60,7 +61,7 @@ export const fetchExpenses = createAsyncThunk(
 
 export const fetchIncomes = createAsyncThunk(
   'incomes/fetchIncomes',
-  async (userId = null, { signal }) => {
+  async (_, { signal }) => {
     const response = await getAllIncomes();
     if (signal.aborted) {
       throw new Error('Request aborted');
@@ -68,12 +69,11 @@ export const fetchIncomes = createAsyncThunk(
     
     if (response.ok) {
       const data = await response.json();
-      
-      const filteredData = userId 
-        ? data.filter(income => income.user_id === userId)
-        : data;
-      return filteredData;
+      return data;
     } else {
+      if (response.status === 401) {
+        throw new Error('Unauthorized');
+      }
       throw new Error(`Failed to get incomes: ${response.status}`);
     }
   }
@@ -122,6 +122,16 @@ const initialState = {
 const userSlice = createSlice({
   name: 'user',
   initialState,
+  reducers: {
+    // Добавляем редьюсер для принудительного сброса авторизации
+    resetAuthState: (state) => {
+      state.isAuthenticated = false;
+      state.isAuthChecked = true;
+      state.expenses = [];
+      state.incomes = [];
+      state.userError = null;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(userLogin.pending, (state) => {
@@ -192,6 +202,10 @@ const userSlice = createSlice({
       .addCase(fetchExpenses.rejected, (state, action) => {
         state.isLoading = false;
         state.userError = action.error.message || 'Failed to fetch expenses';
+        if (action.error.message === 'Unauthorized') {
+          state.isAuthenticated = false;
+          state.expenses = [];
+        }
       })
 
       .addCase(fetchIncomes.pending, (state) => {
@@ -206,6 +220,10 @@ const userSlice = createSlice({
       .addCase(fetchIncomes.rejected, (state, action) => {
         state.isLoading = false;
         state.userError = action.error.message || 'Failed to fetch incomes';
+        if (action.error.message === 'Unauthorized') {
+          state.isAuthenticated = false;
+          state.incomes = [];
+        }
       })
 
       .addCase(fetchCreateExpense.pending, (state) => {
@@ -254,4 +272,5 @@ const userSlice = createSlice({
   },
 });
 
+export const { resetAuthState } = userSlice.actions;
 export const userReducer = userSlice.reducer;

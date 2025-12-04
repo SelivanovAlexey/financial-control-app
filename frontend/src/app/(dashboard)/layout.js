@@ -11,6 +11,7 @@ import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor, useSelector } from "@/app/store";
 import AuthCheck from "@/components/AuthCheck";
+import AuthInitializer from "@/components/AuthInitializer";
 
 
 const roboto = Roboto({
@@ -34,17 +35,19 @@ export default function DashboardLayout({ children }) {
       <body style={{ fontFamily: roboto.style.fontFamily, height: "100vh"}}>
         <Provider store = {store}>
           <PersistGate loading={null} persistor={persistor}>
-            <AuthCheck>
-              <Grid container>
-                <Grid size={1}>
-                  <Sider />
+            <AuthInitializer>
+              <AuthCheck>
+                <Grid container>
+                  <Grid size={1}>
+                    <Sider />
+                  </Grid>
+                  <Grid size={11}>
+                    <Header />
+                    <Content>{children}</Content>
+                  </Grid>
                 </Grid>
-                <Grid size={11}>
-                  <Header />
-                  <Content>{children}</Content>
-                </Grid>
-              </Grid>
-            </AuthCheck>
+              </AuthCheck>
+            </AuthInitializer>
           </PersistGate>
         </Provider>
       </body>

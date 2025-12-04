@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="add column 'email' into 'users'" author="alexey selivanov">
+        <comment>Добавление поля email в таблицу users</comment>
+
+        <sqlFile path="1.0.3/add_column_email.sql" relativeToChangelogFile="true"/>
+
+        <rollback>
+            <sqlFile path="1.0.3/rollback/add_column_email_rollback.sql" relativeToChangelogFile="true"/>
+        </rollback>
+
+    </changeSet>
+    <changeSet id="add constraint unique username on table 'users'" author="alexey selivanov">
+        <addUniqueConstraint columnNames="username"
+                             tableName="users"
+                             constraintName="uq_users_username"/>
+    </changeSet>
+</databaseChangeLog>
