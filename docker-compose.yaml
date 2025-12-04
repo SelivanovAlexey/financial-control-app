@@ -5,19 +5,30 @@ services:
   backend:
     container_name: backend
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
       args:
-        BUILD_PROFILE: local
-        SPRING_PROFILE: local
+        BUILD_ENV: local # local, ci, prod
     ports:
       - 8484:8484
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/financial
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: 1234
     depends_on:
       - postgres
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        BUILD_ENV: local # local, ci, prod
+    ports:
+      - 3000:3000
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
   postgres:
     image: postgres:14.7
     container_name: postgres-db
