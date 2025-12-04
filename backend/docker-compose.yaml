@@ -1,0 +1,31 @@
+volumes:
+  data:
+
+services:
+  backend:
+    container_name: backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_PROFILE: local
+        SPRING_PROFILE: local
+    ports:
+      - 8484:8484
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/financial
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:14.7
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: financial
+    ports:
+      - 5432:5432
+    volumes:
+      - data:/var/lib/postgresql/data

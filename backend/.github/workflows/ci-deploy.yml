@@ -1,0 +1,60 @@
+name: CI pipeline
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: building application
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4 #
+
+      - name: setup java and maven
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: setup docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: test app and database containers launch
+        run: docker compose -f docker-compose.yaml up -d
+
+      - name: run liquibase migrations dry-run
+        run: |
+          cd migration
+          mvn -Plocal liquibase:update
+  ci-deploy:
+    name: deploying onto koyeb paas
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: install koyeb cli
+        uses: koyeb-community/koyeb-actions@v2
+        with:
+          api_token: "${{ secrets.KOYEB_API_TOKEN }}"
+
+      - name: deploy / update service
+        uses: koyeb/action-git-deploy@v1
+        with:
+          app-name: financial-control-app
+          service-name: financial-control-backend-ci
+          service-env: SPRING_PROFILE=ci,BUILD_PROFILE=ci
+          service-ports: "8484:http"
+          service-routes: "/:8484"
+          git-builder: docker
+          service-instance-type: free
+
+      - name: checkout repo
+        uses: actions/checkout@v4 #
+
+      - name: run liquibase migrations
+        run: |
+          cd migration
+          mvn -Pci liquibase:update
