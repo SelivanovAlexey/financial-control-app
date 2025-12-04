@@ -1,0 +1,10 @@
+.header {
+    display: flex;
+    justify-content: end;
+    padding: 20px;
+    height: 100px;
+}
+
+.avatar:hover {
+    opacity: 0.7;
+}

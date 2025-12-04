@@ -1,0 +1,16 @@
+.page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.link {
+    color: #6b6b6b
+}
+
+.link:hover {
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    color: #424242
+}

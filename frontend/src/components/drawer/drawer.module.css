@@ -1,0 +1,8 @@
+.icon {
+    color: var(--font-color);
+    
+}
+
+.icon:hover {
+    opacity: 0.5;
+}

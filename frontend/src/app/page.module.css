@@ -1,0 +1,210 @@
+.container {
+    font-weight: 400;
+    font-size: 32px;
+    text-align: center;
+    margin: 64px 80px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 50px;
+    max-height: 70vh;
+}
+
+.table_header {
+    font-weight: 400;
+    font-size: 32px;
+    display: flex;
+    color: var(--font-color);
+    margin-bottom: 40px;
+}
+
+.table_container {
+    font-weight: 400;
+    font-size: 32px;
+    text-align: center;
+    margin: 64px 80px;
+    color: var(--font-color);
+}
+
+.transactions_container {
+    font-weight: 400;
+    font-size: 32px;
+    text-align: center;
+    margin: 160px 80px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.card {
+    height: 35vh;
+    border-radius: 30px;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: start;
+    background-color: var(--foreground);
+    width: 100%;
+    padding: 3%;
+}
+
+.card_transactions {
+    border-radius: 30px;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: start;
+    background-color: var(--foreground);
+    padding: 4%;
+}
+
+.card_graph {
+    border-radius: 30px;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* изменено с center на flex-start */
+    align-items: center;
+    background-color: var(--foreground);
+    grid-row: span 2 / auto;
+    width: 100%;
+    padding: 1rem;
+    min-height: 500px; /* минимальная высота */
+}
+
+.chart_container {
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
+    flex: 1; /* занимает все доступное пространство */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.card_graph_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    width: 100%;
+    padding: 1rem 0;
+    font-size: calc(40px + 2vmin);
+    font-weight: bold;
+    flex-shrink: 0; /* предотвращает сжатие */
+}
+
+.card_header {
+    font-size: calc(8px + 2vmin);
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+}
+
+.card_body {
+    width: 100%;
+    padding-right: 5%;
+}
+
+.transactions_card_body {
+    margin-top: 6%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 3vh;
+}
+
+.card_input {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 15px;
+    font-size: calc(16px + 1vmin);
+}
+
+.modal {
+    width: 32%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%)
+}
+
+@media (max-width: 1440px) {
+    .card_graph_header {
+    font-size: calc(25px + 2vmin);
+    padding: 1rem;
+}
+}
+
+/* Десктоп (1024px и выше) */
+@media (max-width: 1280px) {
+    .container {
+        margin: 64px 80px;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto auto;
+        gap: 50px;
+    }
+    
+    .card_graph {
+        grid-column: 1 / span 2;
+        grid-row: 1;
+        min-height: 400px;
+    }
+    
+    .card {
+        height: 35vh;
+    }
+    
+    .card:nth-of-type(1) {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    
+    .card:nth-of-type(2) {
+        grid-column: 2;
+        grid-row: 2;
+    }
+}
+
+@media (max-width: 1440px) {
+    .card_graph_header {
+    font-size: calc(30px + 2vmin);
+    gap: 0;
+}
+}
+
+@media (max-width: 767px) {
+    .container {
+        margin: 20px;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 30px;
+        max-height: none;
+    }
+    
+    .card_graph {
+        grid-column: 1;
+        grid-row: 1;
+        min-height: 400px; /* Устанавливаем минимальную высоту */
+        max-height: none; /* Убираем ограничение максимальной высоты */
+        height: auto; /* Высота автоматическая */
+    }
+    
+    .card {
+        height: auto;
+        min-height: 300px; /* Минимальная высота для карточек */
+        padding: 20px;
+    }
+    
+    /* Добавляем стили для PieChart на мобильных */
+    .card_graph .MuiBox-root {
+        width: 100% !important;
+        height: 400px !important;
+    }
+}

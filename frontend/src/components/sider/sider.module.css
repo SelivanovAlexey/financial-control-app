@@ -1,0 +1,20 @@
+.sider {
+    height: 100vh;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.sider_button {
+    color: var(--main-color);;
+}
+
+.sider_button:hover {
+    opacity: 0.7;
+}
+
+.sider_button_active {
+    color: var(--accent-color);
+}
