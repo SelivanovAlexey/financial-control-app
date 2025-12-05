@@ -39,45 +39,61 @@ export const userSignUp = createAsyncThunk(
 
 export const fetchExpenses = createAsyncThunk(
   'expenses/fetchExpenses',
-  async (_, { signal, getState }) => {
-    const response = await getAllExpenses();
-    if (signal.aborted) {
-      throw new Error('Request aborted');
-    }
-    
-    if (response.ok) {
-      const data = await response.json();
-      // В реальном приложении здесь должна быть фильтрация по userId
-      // В вашем API, вероятно, сервер сам возвращает данные для текущего пользователя
-      return data;
-    } else {
-      if (response.status === 401) {
-        throw new Error('Unauthorized');
+  async (_, { signal, rejectWithValue }) => {
+    try {
+      const response = await getAllExpenses();
+      
+      if (signal.aborted) {
+        throw new Error('Request aborted');
       }
-      throw new Error(`Failed to get expenses: ${response.status}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      } else {
+        if (response.status === 401) {
+          return rejectWithValue('Unauthorized');
+        }
+        return rejectWithValue(`Failed to get expenses: ${response.status}`);
+      }
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log('Запрос расходов отменен');
+        throw error;
+      }
+      return rejectWithValue(error.message || 'Failed to fetch expenses');
     }
   }
 );
 
 export const fetchIncomes = createAsyncThunk(
   'incomes/fetchIncomes',
-  async (_, { signal }) => {
-    const response = await getAllIncomes();
-    if (signal.aborted) {
-      throw new Error('Request aborted');
-    }
-    
-    if (response.ok) {
-      const data = await response.json();
-      return data;
-    } else {
-      if (response.status === 401) {
-        throw new Error('Unauthorized');
+  async (_, { signal, rejectWithValue }) => {
+    try {
+      const response = await getAllIncomes();
+      
+      if (signal.aborted) {
+        throw new Error('Request aborted');
       }
-      throw new Error(`Failed to get incomes: ${response.status}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      } else {
+        if (response.status === 401) {
+          return rejectWithValue('Unauthorized');
+        }
+        return rejectWithValue(`Failed to get incomes: ${response.status}`);
+      }
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log('Запрос доходов отменен');
+        throw error;
+      }
+      return rejectWithValue(error.message || 'Failed to fetch incomes');
     }
   }
-);
+)
 
 export const fetchCreateExpense = createAsyncThunk(
   'expense/createExpense',
@@ -108,6 +124,28 @@ export const fetchCreateIncome = createAsyncThunk(
     }
   }
 )
+
+export const checkAuth = createAsyncThunk(
+  'user/checkAuth',
+  async (_, { rejectWithValue, dispatch }) => {
+    try {
+      // Пробуем загрузить расходы - если получится, значит авторизован
+      const result = await dispatch(fetchExpenses()).unwrap();
+      
+      // Если запрос прошел без ошибок - авторизован
+      return { 
+        isAuthenticated: true,
+        initialExpenses: result 
+      };
+    } catch (error) {
+      // Если ошибка 401 или другая - не авторизован
+      return rejectWithValue({
+        isAuthenticated: false,
+        error: error.message || 'Auth check failed'
+      });
+    }
+  }
+);
 
 const initialState = {
   userRequest: false,
@@ -268,7 +306,26 @@ const userSlice = createSlice({
       })
       .addCase(fetchCreateIncome.rejected, (state, action) => {
         state.userError = action.error.message || 'Failed to create income';
-      });
+      })
+
+      .addCase(checkAuth.pending, (state) => {
+    state.isLoading = true;
+    state.userError = null;
+      })
+      .addCase(checkAuth.fulfilled, (state, action) => {
+        state.isAuthenticated = true;
+        state.isAuthChecked = true;
+        state.isLoading = false;
+        state.userError = null;
+        // Если API возвращает информацию о пользователе:
+        // state.user = action.payload.user;
+      })
+      .addCase(checkAuth.rejected, (state, action) => {
+        state.isAuthenticated = false;
+        state.isAuthChecked = true;
+        state.isLoading = false;
+        state.userError = action.payload?.error || null;
+      })
   },
 });
 

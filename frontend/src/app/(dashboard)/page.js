@@ -5,10 +5,7 @@ import { LineChart } from '@mui/x-charts/LineChart';
 import {PieChart, pieArcLabelClasses } from '@mui/x-charts/PieChart';
 import { useEffect, useState } from "react";
 import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup, {
-  toggleButtonGroupClasses,
-} from '@mui/material/ToggleButtonGroup';
-import { styled } from "@mui/material";
+import { StyledToggleButtonGroup } from "@/components/toggleButtonGroup/ToggleButtonGroup";
 import {Paper} from "@mui/material";
 import Modal from '@mui/material/Modal';
 import IncomesModal from "@/components/modal/IncomesModal";
@@ -18,167 +15,10 @@ import { fetchExpenses, fetchIncomes } from "@/reducers/userReducer";
 import CircularProgress from '@mui/material/CircularProgress';
 import { useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useRef } from "react";
+import { parseDateToTimestamp,  filterDataByPeriod, groupDataByCategory, getDataByTimePeriod, calculateTotalAmount} from "@/utils/Utils";
 
 const margin = { right: 24, left: 24, bottom: 28 };
-
-const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
-  [`& .${toggleButtonGroupClasses.grouped}`]: {
-    margin: theme.spacing(0.5),
-    border: 0,
-    borderRadius: theme.shape.borderRadius,
-    [`&.${toggleButtonGroupClasses.disabled}`]: {
-      border: 0,
-    },
-  },
-  [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]:
-    {
-      marginLeft: -1,
-      borderLeft: '1px solid transparent',
-    },
-}));
-
-// Функция для фильтрации данных по периоду
-const filterDataByPeriod = (data, period) => {
-  if (!data || !Array.isArray(data)) return [];
-  
-  const now = new Date();
-  
-  switch (period) {
-    case 'left': // Последние 7 дней
-      const weekAgo = new Date();
-      weekAgo.setDate(now.getDate() - 7);
-      weekAgo.setHours(0, 0, 0, 0);
-      
-      return data.filter(item => {
-        if (!item?.createDate) return false;
-        const itemDate = new Date(item.createDate * 1000);
-        return itemDate >= weekAgo;
-      });
-      
-    case 'center': // Последние 30 дней (а не текущий календарный месяц)
-      const monthAgo = new Date();
-      monthAgo.setDate(now.getDate() - 30);
-      monthAgo.setHours(0, 0, 0, 0);
-      
-      return data.filter(item => {
-        if (!item?.createDate) return false;
-        const itemDate = new Date(item.createDate * 1000);
-        return itemDate >= monthAgo;
-      });
-      
-    case 'right': // Последние 365 дней (а не текущий календарный год)
-      const yearAgo = new Date();
-      yearAgo.setDate(now.getDate() - 365);
-      yearAgo.setHours(0, 0, 0, 0);
-      
-      return data.filter(item => {
-        if (!item?.createDate) return false;
-        const itemDate = new Date(item.createDate * 1000);
-        return itemDate >= yearAgo;
-      });
-      
-    default:
-      return data;
-  }
-};
-
-// Функция для группировки данных по категориям
-const groupDataByCategory = (data) => {
-  if (!data || !Array.isArray(data)) return [];
-  
-  const grouped = data.reduce((acc, item) => {
-    const category = item.category || 'Другое';
-    if (!acc[category]) {
-      acc[category] = 0;
-    }
-    acc[category] += item.amount || 0;
-    return acc;
-  }, {});
-
-  return Object.entries(grouped).map(([label, value]) => ({
-    label,
-    value,
-    id: label
-  }));
-};
-
-// Функция для получения данных по временным периодам
-const getDataByTimePeriod = (data, period) => {
-  if (!data || !Array.isArray(data)) return { data: Array(7).fill(0), labels: Array(7).fill('') };
-  
-  const now = new Date();
-  let periods = [];
-  let labels = [];
-  
-  switch (period) {
-    case 'left': // Неделя (последние 7 дней)
-      periods = Array(7).fill(0);
-      labels = Array(7).fill('');
-      
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-        labels[6-i] = date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-        
-        data.forEach(item => {
-          if (item.createDate) {
-            const itemDate = new Date(item.createDate * 1000);
-            if (itemDate.toDateString() === date.toDateString()) {
-              periods[6-i] += item.amount || 0;
-            }
-          }
-        });
-      }
-      return { data: periods, labels };
-
-    case 'center': // Месяц (последние 30 дней)
-  periods = Array(30).fill(0);
-  labels = Array(30).fill('');
-  
-  for (let i = 29; i >= 0; i--) {
-    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-    labels[29-i] = date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-    
-    data.forEach(item => {
-      if (item.createDate) {
-        const itemDate = new Date(item.createDate * 1000);
-        if (itemDate.toDateString() === date.toDateString()) {
-          periods[29-i] += item.amount || 0;
-        }
-      }
-    });
-  }
-  return { data: periods, labels };
-
-    case 'right': // Год (последние 12 месяцев)
-      periods = Array(12).fill(0);
-      labels = Array(12).fill('');
-      
-      for (let i = 11; i >= 0; i--) {
-        const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        labels[11-i] = month.toLocaleDateString('ru-RU', { month: 'short' });
-        
-        data.forEach(item => {
-          if (item.createDate) {
-            const itemDate = new Date(item.createDate * 1000);
-            if (itemDate.getMonth() === month.getMonth() && 
-                itemDate.getFullYear() === month.getFullYear()) {
-              periods[11-i] += item.amount || 0;
-            }
-          }
-        });
-      }
-      return { data: periods, labels };
-
-    default:
-      return { data: Array(7).fill(0), labels: Array(7).fill('') };
-  }
-};
-
-// Функция для расчета общей суммы
-const calculateTotalAmount = (data) => {
-  if (!data || !Array.isArray(data)) return 0;
-  return data.reduce((total, item) => total + (item.amount || 0), 0);
-};
 
 export default function Home() {
   const theme = useTheme();
@@ -186,6 +26,7 @@ export default function Home() {
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'lg')); // 600px - 1279px
   const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // до 600px
 
+  const dataLoadedRef = useRef(false);
   const dispatch = useDispatch();
   const { expenses, incomes, isLoading, userError } = useSelector(state => state.user);
   
@@ -204,10 +45,14 @@ export default function Home() {
     }
   };
 
-  // Загружаем расходы при монтировании компонента
   useEffect(() => {
-    dispatch(fetchExpenses());
-    dispatch(fetchIncomes());
+    // Загружаем данные только один раз
+    if (!dataLoadedRef.current) {
+      console.log('Загружаю данные...');
+      dispatch(fetchExpenses());
+      dispatch(fetchIncomes());
+      dataLoadedRef.current = true;
+    }
   }, [dispatch]);
 
   // Фильтруем данные по выбранному периоду
@@ -223,6 +68,16 @@ export default function Home() {
   
   const expensesChartData = getDataByTimePeriod(filteredExpenses, period);
   const incomesChartData = getDataByTimePeriod(filteredIncomes, period);
+
+  // Отладка: выводим данные в консоль
+  useEffect(() => {
+    console.log('Расходы:', expenses);
+    console.log('Доходы:', incomes);
+    console.log('Отфильтрованные расходы:', filteredExpenses);
+    console.log('Отфильтрованные доходы:', filteredIncomes);
+    console.log('Сумма расходов:', expensesAll);
+    console.log('Сумма доходов:', incomesAll);
+  }, [expenses, incomes, filteredExpenses, filteredIncomes, expensesAll, incomesAll]);
 
   // Показываем загрузку или ошибку
   if (isLoading) {
@@ -277,53 +132,64 @@ export default function Home() {
           </div>
         </div>
         <div className={styles.chart_container}>
-          <PieChart
-            slotProps={{
-              legend: {
-                sx: {
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  color: "var(--font-color)",
-                  fontSize: isMobile ? "12px" : "14px",
-                  padding: isMobile ? "1rem" : "2rem",
-                },
-                direction: 'horizontal',
-                position: { 
-                  vertical: 'bottom',
-                  horizontal: 'center'
+          {expensesByCategory.length > 0 ? (
+            <PieChart
+              slotProps={{
+                legend: {
+                  sx: {
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    color: "var(--font-color)",
+                    fontSize: isMobile ? "12px" : "14px",
+                    padding: isMobile ? "1rem" : "2rem",
+                  },
+                  direction: 'horizontal',
+                  position: { 
+                    vertical: 'bottom',
+                    horizontal: 'center'
+                  }
                 }
-              }
-            }}
-            sx={{
-              width: "100%",
-              height: "100%",
-              "& .css-yqw5vn-MuiPieArc-root": {
-                strokeWidth: 0
-              },
-              [`& .${pieArcLabelClasses.root}`]: {
-                fontWeight: 'bold',
-                fill: 'var(--font-color)',
-                fontSize: isMobile ? '14px' : '18px'
-              },
-            }}
-            // Убираем фиксированную высоту из компонента
-            // и используем CSS для управления размерами
-            series={[
-              {
-                data: expensesByCategory,
-                startAngle: -270,
-                endAngle: 90,
-                innerRadius: isMobile ? "60%" : isTablet ? "70%" : "80%",
-                outerRadius: isMobile ? "80%" : isTablet ? "90%" : "100%",
-                paddingAngle: 5,
-                cornerRadius: 5,
-                highlightScope: { fade: 'global', highlight: 'item' },
-                arcLabelRadius: isMobile ? "50%" : isTablet ? "55%" : "60%",
-                arcLabel: (item) => expensesAll > 0 ? `${(item.value / expensesAll * 100).toFixed(2)} %` : '0%',
-              }
-            ]}
-          />
+              }}
+              sx={{
+                width: "100%",
+                height: "100%",
+                "& .css-yqw5vn-MuiPieArc-root": {
+                  strokeWidth: 0
+                },
+                [`& .${pieArcLabelClasses.root}`]: {
+                  fontWeight: 'bold',
+                  fill: 'var(--font-color)',
+                  fontSize: isMobile ? '14px' : '18px'
+                },
+              }}
+              series={[
+                {
+                  data: expensesByCategory,
+                  startAngle: -270,
+                  endAngle: 90,
+                  innerRadius: isMobile ? "60%" : isTablet ? "70%" : "80%",
+                  outerRadius: isMobile ? "80%" : isTablet ? "90%" : "100%",
+                  paddingAngle: 5,
+                  cornerRadius: 5,
+                  highlightScope: { fade: 'global', highlight: 'item' },
+                  arcLabelRadius: isMobile ? "50%" : isTablet ? "55%" : "60%",
+                  arcLabel: (item) => expensesAll > 0 ? `${(item.value / expensesAll * 100).toFixed(2)} %` : '0%',
+                }
+              ]}
+            />
+          ) : (
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              height: '100%',
+              color: 'var(--font-color)',
+              fontSize: 'calc(10px + 1vmin)'
+            }}>
+              Нет данных о расходах
+            </div>
+          )}
         </div>
       </div>
       
@@ -348,25 +214,26 @@ export default function Home() {
           </Modal>
         </div>
         <div className={styles.card_body}>
-          <LineChart
-            height={250}
-            series={[
-              { data: incomesChartData.data, color: `var(--accent-color)` },
-            ]}
-            xAxis={[
-              {
-                scaleType: 'point',
-                data: incomesChartData.labels,
-              }
-            ]}
-            yAxis={[
-              {
-                width: 50,
-              }
-            ]}
-            margin={margin}
-            grid={{ vertical: true, horizontal: true }}
-            sx={{
+          {incomesChartData.data.length > 0 ? (
+            <LineChart
+              height={250}
+              series={[
+                { data: incomesChartData.data, color: `var(--accent-color)` },
+              ]}
+              xAxis={[
+                {
+                  scaleType: 'point',
+                  data: incomesChartData.labels,
+                }
+              ]}
+              yAxis={[
+                {
+                  width: 50,
+                }
+              ]}
+              margin={margin}
+              grid={{ vertical: true, horizontal: true }}
+              sx={{
                 "& .MuiChartsAxis-left .MuiChartsAxis-tickLabel":{
                   fill:"#fff",
                   opacity:0.7
@@ -384,7 +251,19 @@ export default function Home() {
                   opacity:0.7
                 }
               }}
-          />
+            />
+          ) : (
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              height: '250px',
+              color: 'var(--font-color)',
+              fontSize: 'calc(10px + 1vmin)'
+            }}>
+              Нет данных о доходах
+            </div>
+          )}
         </div>
       </div>
       
@@ -409,25 +288,26 @@ export default function Home() {
           </Modal>
         </div>
         <div className={styles.card_body}>
-          <LineChart
-            height={250}
-            series={[
-              { data: expensesChartData.data, color: `var(--red-color)` },
-            ]}
-            xAxis={[
-              {
-                scaleType: 'point',
-                data: expensesChartData.labels,
-              }
-            ]}
-            yAxis={[
-              {
-                width: 50,
-              }
-            ]}
-            margin={margin}
-            grid={{ vertical: true, horizontal: true }}
-            sx={{
+          {expensesChartData.data.length > 0 ? (
+            <LineChart
+              height={250}
+              series={[
+                { data: expensesChartData.data, color: `var(--red-color)` },
+              ]}
+              xAxis={[
+                {
+                  scaleType: 'point',
+                  data: expensesChartData.labels,
+                }
+              ]}
+              yAxis={[
+                {
+                  width: 50,
+                }
+              ]}
+              margin={margin}
+              grid={{ vertical: true, horizontal: true }}
+              sx={{
                 "& .MuiChartsAxis-left .MuiChartsAxis-tickLabel":{
                   fill:"#fff",
                   opacity:0.7
@@ -445,7 +325,19 @@ export default function Home() {
                   opacity:0.7
                 }
               }}
-          />
+            />
+          ) : (
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              height: '250px',
+              color: 'var(--font-color)',
+              fontSize: 'calc(10px + 1vmin)'
+            }}>
+              Нет данных о расходах
+            </div>
+          )}
         </div>
       </div>
     </div>

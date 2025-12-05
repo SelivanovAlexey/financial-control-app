@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "@/app/store";
 import { useRouter } from "next/navigation";
-import { fetchExpenses, fetchIncomes } from "@/reducers/userReducer";
 
 export default function AuthInitializer({ children }) {
   const dispatch = useDispatch();
@@ -13,11 +12,7 @@ export default function AuthInitializer({ children }) {
     const checkSession = async () => {
       if (isAuthenticated && isAuthChecked) {
         try {
-          // Пробуем загрузить данные для проверки сессии
-          await Promise.all([
-            dispatch(fetchExpenses()).unwrap(),
-            dispatch(fetchIncomes()).unwrap()
-          ]);
+          console.log('Данные загружены')
         } catch (error) {
           console.log('Сессия истекла, перенаправляем на логин');
           router.push('/login');

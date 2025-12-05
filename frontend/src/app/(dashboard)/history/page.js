@@ -1,7 +1,6 @@
 "use client";
 import styles from "@/app/page.module.css";
 import * as React from 'react';
-import { useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -9,39 +8,53 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { useDispatch, useSelector } from "../../store";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { fetchExpenses, fetchIncomes } from "@/reducers/userReducer";
 
-function createData(id, date, category, description, amount, type) {
-  return { id, date, category, description, amount, type };
-}
-
-// Функция для преобразования timestamp в формат даты
-const formatDate = (timestamp) => {
-  if (!timestamp) return '';
-
-  const date = new Date(timestamp * 1000);
-
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  
+  try {
+    const date = new Date(dateString);
+    
+    if (isNaN(date.getTime())) {
+      const timestamp = parseInt(dateString);
+      if (!isNaN(timestamp)) {
+        return formatDate(new Date(timestamp * 1000).toISOString());
+      }
+      return '';
+    }
+    
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}.${month}.${year}`;
+  } catch (error) {
+    console.error('Ошибка форматирования даты:', error);
+    return '';
+  }
 };
 
 export default function History() {
+
+  const dataCheckedRef = useRef(false);
+
   const dispatch = useDispatch();
   const { expenses, incomes, isLoading, userError } = useSelector(state => state.user);
   
   useEffect(() => {
-    dispatch(fetchExpenses());
-    dispatch(fetchIncomes());
-  }, [dispatch]);
+    // Проверяем, есть ли данные, и загружаем только если их нет
+    if (!dataCheckedRef.current && expenses.length === 0 && incomes.length === 0) {
+      dispatch(fetchExpenses());
+      dispatch(fetchIncomes());
+    }
+    dataCheckedRef.current = true;
+  }, [dispatch, expenses.length, incomes.length]);
 
   const sortedRows = React.useMemo(() => {
-    // Создаем массив всех транзакций с сохранением timestamp для сортировки
     const allTransactions = [];
 
-    // Добавляем расходы
     expenses.forEach(expense => {
       allTransactions.push({
         id: `expense_${expense.id}`,
@@ -54,7 +67,6 @@ export default function History() {
       });
     });
 
-    // Добавляем доходы
     (incomes || []).forEach(income => {
       allTransactions.push({
         id: `income_${income.id}`,
@@ -68,13 +80,12 @@ export default function History() {
     });
 
     const sorted = [...allTransactions].sort((a, b) => {
-      return b.timestamp - a.timestamp; // от большего к меньшему
+      return b.timestamp - a.timestamp;
     });
 
     return sorted;
   }, [expenses, incomes]);
 
-  // Показываем загрузку
   if (isLoading) {
     return (
       <div className={styles.table_container}>
