@@ -7,11 +7,11 @@ import app.core.repository.IncomeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -27,12 +27,11 @@ public class IncomeServiceImpl implements IncomeService {
     @Override
     public Income get(Long id) {
         return incomeRepository
-                .findById(id).orElseThrow(() -> new EntityNotFoundException("Не найдено дохода по id: " + id));
+                .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id + "is not found!"));
     }
 
     @Override
     public Income create(Income income) {
-        income.setCreateDate(OffsetDateTime.now());
         income.setUser(getUser());
         return incomeRepository.save(income);
     }
@@ -40,15 +39,21 @@ public class IncomeServiceImpl implements IncomeService {
     @Override
     public void delete(Long id) {
         Income income = incomeRepository
-                .findById(id).orElseThrow(() -> new EntityNotFoundException("Не найдено дохода по id: " + id));
+                .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id +  "is not found!"));
         incomeRepository.delete(income);
     }
 
     @Override
     public Income update(Long id, Income newIncome) {
-        newIncome.setId(id);
-        newIncome.setCreateDate(OffsetDateTime.now());
-        return incomeRepository.saveAndFlush(newIncome);
+        Income oldIncome = incomeRepository
+                .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id +  "is not found!"));
+        checkAccess(oldIncome);
+
+        oldIncome.setAmount(newIncome.getAmount());
+        oldIncome.setCategory(newIncome.getCategory());
+        oldIncome.setCreateDate(newIncome.getCreateDate());
+
+        return incomeRepository.save(oldIncome);
     }
 
     @Override
@@ -60,6 +65,13 @@ public class IncomeServiceImpl implements IncomeService {
     private User getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return (User) authentication.getPrincipal();
+    }
+
+    private void checkAccess(Income income) {
+        User currentUser = getUser();
+        if (!income.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("Access to this record is not allowed for current user");
+        }
     }
 
 }

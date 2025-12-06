@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
 
+//TODO: валидация полей
 @Data
 @Entity
 @Table(name = "income", schema = "public")

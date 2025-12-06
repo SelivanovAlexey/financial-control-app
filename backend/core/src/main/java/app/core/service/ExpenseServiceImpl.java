@@ -2,16 +2,17 @@ package app.core.service;
 
 import app.core.api.ExpenseService;
 import app.core.model.Expense;
+import app.core.model.Income;
 import app.core.model.User;
 import app.core.repository.ExpenseRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -27,12 +28,11 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     public Expense get(Long id) {
         return expenseRepository
-                .findById(id).orElseThrow(() -> new EntityNotFoundException("Не найдено дохода по id: " + id));
+                .findById(id).orElseThrow(() -> new EntityNotFoundException("Expense with id: " + id + "is not found!"));
     }
 
     @Override
     public Expense create(Expense expense) {
-        expense.setCreateDate(OffsetDateTime.now());
         expense.setUser(getUser());
         return expenseRepository.save(expense);
     }
@@ -40,15 +40,21 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     public void delete(Long id) {
         Expense Expense = expenseRepository
-                .findById(id).orElseThrow(() -> new EntityNotFoundException("Не найдено дохода по id: " + id));
+                .findById(id).orElseThrow(() -> new EntityNotFoundException("Expense with id: " + id + "is not found!"));
         expenseRepository.delete(Expense);
     }
 
     @Override
     public Expense update(Long id, Expense newExpense) {
-        newExpense.setId(id);
-        newExpense.setCreateDate(OffsetDateTime.now());
-        return expenseRepository.saveAndFlush(newExpense);
+        Expense oldExpense = expenseRepository
+                .findById(id).orElseThrow(() -> new EntityNotFoundException("Expense with id: " + id +  "is not found!"));
+        checkAccess(oldExpense);
+
+        oldExpense.setAmount(newExpense.getAmount());
+        oldExpense.setCategory(newExpense.getCategory());
+        oldExpense.setCreateDate(newExpense.getCreateDate());
+
+        return expenseRepository.save(oldExpense);
     }
 
     @Override
@@ -60,6 +66,13 @@ public class ExpenseServiceImpl implements ExpenseService {
     private User getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return (User) authentication.getPrincipal();
+    }
+
+    private void checkAccess(Expense expense) {
+        User currentUser = getUser();
+        if (!expense.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("Access to this record is not allowed for current user");
+        }
     }
 
 }

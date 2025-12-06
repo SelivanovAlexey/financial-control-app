@@ -23,12 +23,12 @@ public class UserServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findByUsername(username);
-        return user.orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+        return user.orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     public void createUser(String username, String rawPassword, String email) throws UserAlreadyExistsException {
         if (userRepository.existsByUsername(username)) {
-            throw new UserAlreadyExistsException("Пользователь с username '" + username + "' уже существует");
+            throw new UserAlreadyExistsException("User with username '" + username + "' already exists");
         }
 
         User newUser = User.builder()

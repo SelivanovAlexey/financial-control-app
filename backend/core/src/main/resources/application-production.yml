@@ -17,4 +17,4 @@ spring:
     password: npg_vJmqn82jtNDw
 logging:
   level:
-    app.core: debug
+    app.core: info
