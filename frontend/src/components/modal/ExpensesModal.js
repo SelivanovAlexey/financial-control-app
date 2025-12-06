@@ -54,7 +54,9 @@ export default function Transactions({closeModal}) {
   };
 
   const handleDateChange = (date) => {
-    handleInputChange('createDate', date);
+    if (date) {
+      handleInputChange('createDate', date);
+    }
   };
 
   const handleAmountChange = (event) => {
@@ -68,84 +70,99 @@ export default function Transactions({closeModal}) {
     handleInputChange('description', event.target.value);
   };
 
-  const handleSubmit = async (event) => {
-  event.preventDefault();
-  
-  if (!formData.amount || !formData.category) {
-    alert('Пожалуйста, заполните обязательные поля: Сумма и Категория');
-    return;
-  }
-
-  const amountValue = parseFloat(formData.amount);
-  if (amountValue <= 0 || isNaN(amountValue)) {
-    alert('Сумма должна быть числом больше 0');
-    return;
-  }
-
-  setIsSubmitting(true);
-
-  try {
-    // ФИКС: Правильный формат для OffsetDateTime
-    let createDateUTC;
+  const formatDateForBackend = (dayjsDate) => {
+    if (!dayjsDate || !dayjsDate.isValid()) {
+      dayjsDate = dayjs();
+    }
     
-    if (formData.createDate && dayjs.isDayjs(formData.createDate)) {
-      // Формат: YYYY-MM-DDTHH:mm:ssZ (например: 2025-11-10T00:00:00Z)
-      createDateUTC = formData.createDate
-        .startOf('day') // Начало дня в локальной зоне
-        .utc() // Конвертируем в UTC
-        .format('YYYY-MM-DDTHH:mm:ss[Z]'); // Важно: T между датой и временем, Z для UTC
-    } else {
-      createDateUTC = dayjs().utc().startOf('day').format('YYYY-MM-DDTHH:mm:ss[Z]');
+    const timezoneOffset = dayjsDate.format('Z');
+  
+    const dateString = dayjsDate.format('YYYY-MM-DDTHH:mm:ss');
+    
+    return `${dateString}${timezoneOffset}`;
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    
+    if (!formData.amount || !formData.category) {
+      alert('Пожалуйста, заполните обязательные поля: Сумма и Категория');
+      return;
     }
 
-    const expenseData = {
-      amount: amountValue,
-      category: formData.category,
-      createDate: createDateUTC,
-      description: formData.description || ''
-    };
+    const amountValue = parseFloat(formData.amount);
+    if (amountValue <= 0 || isNaN(amountValue)) {
+      alert('Сумма должна быть числом больше 0');
+      return;
+    }
 
-    console.log('Отправляемые данные:', expenseData);
-    console.log('Формат даты:', createDateUTC);
+    setIsSubmitting(true);
 
-    await dispatch(fetchCreateExpense(expenseData)).unwrap();
-    await dispatch(fetchExpenses()).unwrap();
-    
-    closeModal();
-    
-  } catch (error) {
-    console.error('Error creating expense:', error);
-    alert(`Ошибка при создании расхода: ${error.message}`);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+    try {
+      const createDateFormatted = formatDateForBackend(formData.createDate);
+
+      const expenseData = {
+        amount: amountValue,
+        category: formData.category,
+        createDate: createDateFormatted, // Формат: 2025-12-06T19:29:20+03:00
+        description: formData.description || ''
+      };
+
+      await dispatch(fetchCreateExpense(expenseData)).unwrap();
+      await dispatch(fetchExpenses()).unwrap();
+      
+      closeModal();
+      
+    } catch (error) {
+      console.error('Error creating expense:', error);
+      alert(`Ошибка при создании расхода: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
       <div className={styles.card_transactions}>
          <div className={styles.card_header} style={{paddingBottom: "2%"}}>
           Добавить расход
-          <Button onClick={closeModal} style={{position: "absolute", right: "10px", top: "10px"}}><ClearIcon style={{color: "var(--main-color)"}} disabled={isSubmitting}/></Button>
+          <Button onClick={closeModal} style={{position: "absolute", right: "10px", top: "10px"}}>
+            <ClearIcon style={{color: "var(--main-color)"}} disabled={isSubmitting}/>
+          </Button>
         </div>
         <Divider style={{width: "100%", backgroundColor: "var(--main-color)", opacity: "0.5"}}/>
         <form onSubmit={handleSubmit} style={{width: "100%"}}>
           <div className={styles.transactions_card_body}>
 
             <div className={styles.card_input}>
-              <StyledInput style={{width: "100%"}} label="Сумма" value={formData.amount} onChange={handleAmountChange} required type="text" inputMode="decimal" placeholder="0"/> ₽
+              <StyledInput 
+                style={{width: "100%"}} 
+                label="Сумма" 
+                value={formData.amount} 
+                onChange={handleAmountChange} 
+                required 
+                type="text" 
+                inputMode="decimal" 
+                placeholder="0"
+              /> ₽
             </div>
 
             <div className={styles.card_input}>
               <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-label" style={{color: "var(--main-color)"}}>Категория</InputLabel>
+                <InputLabel id="expense-category-label" style={{color: "var(--main-color)"}}>
+                  Категория
+                </InputLabel>
                 <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
+                  labelId="expense-category-label"
+                  id="expense-category-select"
                   value={formData.category}
                   label="Category"
                   onChange={handleExpenseChange}
                   required
-                  sx={{width: "100%", borderRadius: "30px", color: "var(--font-color)", textAlign: "left",
+                  sx={{
+                    width: "100%", 
+                    borderRadius: "30px", 
+                    color: "var(--font-color)", 
+                    textAlign: "left",
                     '& .MuiOutlinedInput-notchedOutline': {borderColor: "#303030"},
                     '&:hover .MuiOutlinedInput-notchedOutline': {borderColor: "var(--font-color)"},
                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {borderColor: "var(--font-color)"},
@@ -153,30 +170,52 @@ export default function Transactions({closeModal}) {
                   }}
                 >
                   {expenseCategories.map((category) => (
-                    <MenuItem key={category.label} value={category.label}>{category.label}</MenuItem>
+                    <MenuItem key={category.label} value={category.label}>
+                      {category.label}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
 
               <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
-                <DatePicker sx={{
-                  '& .MuiPickersInputBase-root': {color: "var(--font-color)", borderRadius: "30px"},
-                  '& fieldset': {borderColor: "#303030"},
-                  '&:hover fieldset': {borderColor: "var(--font-color) !important"},
-                  '&.Mui-focused fieldset': {borderColor: "var(--font-color) !important"},
-                  '& .MuiSvgIcon-root': {fill: "var(--main-color)"}
-                  }
-                }
-                value={formData.createDate}
-                onChange={handleDateChange}/>
+                <DatePicker 
+                  sx={{
+                    '& .MuiPickersInputBase-root': {color: "var(--font-color)", borderRadius: "30px"},
+                    '& fieldset': {borderColor: "#303030"},
+                    '&:hover fieldset': {borderColor: "var(--font-color) !important"},
+                    '&.Mui-focused fieldset': {borderColor: "var(--font-color) !important"},
+                    '& .MuiSvgIcon-root': {fill: "var(--main-color)"}
+                  }}
+                  value={formData.createDate}
+                  onChange={handleDateChange}
+                  format="DD.MM.YYYY"
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                    }
+                  }}
+                />
               </LocalizationProvider>
               
             </div>
 
             <div className={styles.card_input}>
-              <StyledInput style={{width: "100%", borderRadius: "0"}} label="Комментарий" value={formData.description} onChange={handleDescriptionChange}/>
+              <StyledInput 
+                style={{width: "100%", borderRadius: "0"}} 
+                label="Комментарий" 
+                value={formData.description} 
+                onChange={handleDescriptionChange}
+              />
             </div>
-          <StyledButton style={{width: "100%"}} disabled={isSubmitting} type="submit">{isSubmitting ? 'Добавление...' : 'Добавить'}</StyledButton>
+            
+            <StyledButton 
+              style={{width: "100%"}} 
+              disabled={isSubmitting} 
+              type="submit"
+            >
+              {isSubmitting ? 'Добавление...' : 'Добавить'}
+            </StyledButton>
+            
         </div> 
         </form>    
       </div>

@@ -5,11 +5,11 @@ import "../globals.css";
 import Header from "@/components/header/header";
 import Sider from "@/components/sider/sider";
 import Content from "@/components/content/content";
-import { Grid } from "@mui/material";
+import { Grid, useMediaQuery, useTheme } from "@mui/material";
 import React from "react";
 import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react';
-import { store, persistor, useSelector } from "@/app/store";
+import { store, persistor } from "@/app/store";
 import AuthCheck from "@/components/AuthCheck";
 import AuthInitializer from "@/components/AuthInitializer";
 
@@ -26,6 +26,9 @@ const metadata = {
 
 export default function DashboardLayout({ children }) {
   
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md')); // меньше чем 'md' (900px)
+
   return (
     <html lang="en">
       <head>
@@ -38,11 +41,13 @@ export default function DashboardLayout({ children }) {
             <AuthInitializer>
               <AuthCheck>
                 <Grid container>
+                  {!isMobile && (
                   <Grid size={1}>
-                    <Sider />
+                    <Sider isMobile={isMobile}/>
                   </Grid>
-                  <Grid size={11}>
-                    <Header />
+                  )}
+                  <Grid size={isMobile ? 12 : 11}>
+                    <Header isMobile={isMobile}/>
                     <Content>{children}</Content>
                   </Grid>
                 </Grid>

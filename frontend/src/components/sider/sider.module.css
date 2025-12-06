@@ -18,3 +18,9 @@
 .sider_button_active {
     color: var(--accent-color);
 }
+
+@media (max-width: 768px) {
+    .sider {
+        flex-direction: row;
+    }
+}

@@ -135,62 +135,24 @@
     transform: translate(-50%, -50%)
 }
 
-@media (max-width: 1440px) {
-    .card_graph_header {
-    font-size: calc(25px + 2vmin);
-    padding: 1rem;
-}
-}
-
-/* Десктоп (1024px и выше) */
-@media (max-width: 1280px) {
-    .container {
-        margin: 64px 80px;
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: auto auto;
-        gap: 50px;
-    }
-    
-    .card_graph {
-        grid-column: 1 / span 2;
-        grid-row: 1;
-        min-height: 400px;
-    }
-    
-    .card {
-        height: 35vh;
-    }
-    
-    .card:nth-of-type(1) {
-        grid-column: 1;
-        grid-row: 2;
-    }
-    
-    .card:nth-of-type(2) {
-        grid-column: 2;
-        grid-row: 2;
-    }
-}
-
-@media (max-width: 1440px) {
-    .card_graph_header {
-    font-size: calc(30px + 2vmin);
-    gap: 0;
-}
-}
-
 @media (max-width: 767px) {
     .container {
-        margin: 20px;
+        font-weight: 400;
+        font-size: 32px;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+        display: grid;
         grid-template-columns: 1fr;
         grid-template-rows: auto auto auto;
-        gap: 30px;
         max-height: none;
+        width: 100%;
     }
     
     .card_graph {
         grid-column: 1;
         grid-row: 1;
+        margin: 0;
         min-height: 400px; /* Устанавливаем минимальную высоту */
         max-height: none; /* Убираем ограничение максимальной высоты */
         height: auto; /* Высота автоматическая */
@@ -198,13 +160,8 @@
     
     .card {
         height: auto;
+        margin: 0;
         min-height: 300px; /* Минимальная высота для карточек */
         padding: 20px;
-    }
-    
-    /* Добавляем стили для PieChart на мобильных */
-    .card_graph .MuiBox-root {
-        width: 100% !important;
-        height: 400px !important;
     }
 }

@@ -12,7 +12,6 @@ export default function CustomDrawer() {
 
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
-    console.log("open")
   };
 
   const DrawerList = (

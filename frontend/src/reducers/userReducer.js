@@ -58,7 +58,6 @@ export const fetchExpenses = createAsyncThunk(
       }
     } catch (error) {
       if (error.name === 'AbortError') {
-        console.log('Запрос расходов отменен');
         throw error;
       }
       return rejectWithValue(error.message || 'Failed to fetch expenses');
@@ -87,7 +86,6 @@ export const fetchIncomes = createAsyncThunk(
       }
     } catch (error) {
       if (error.name === 'AbortError') {
-        console.log('Запрос доходов отменен');
         throw error;
       }
       return rejectWithValue(error.message || 'Failed to fetch incomes');

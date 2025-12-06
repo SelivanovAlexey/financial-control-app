@@ -13,12 +13,13 @@ import StyledButton from "@/components/button/StyledButton";
 import 'dayjs/locale/en-gb'
 import ClearIcon from '@mui/icons-material/Clear';
 import Button from '@mui/material/Button';
-import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone';
-import utc from 'dayjs/plugin/utc';
 
 import { useDispatch } from "../../app/store";
 import { fetchCreateIncome, fetchIncomes } from "../../reducers/userReducer";
+
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -52,7 +53,9 @@ export default function TransactionsModal({closeModal}) {
     };
   
     const handleDateChange = (date) => {
-      handleInputChange('createDate', date);
+      if (date) {
+        handleInputChange('createDate', date);
+      }
     };
   
     const handleAmountChange = (event) => {
@@ -64,6 +67,18 @@ export default function TransactionsModal({closeModal}) {
   
     const handleDescriptionChange = (event) => {
       handleInputChange('description', event.target.value);
+    };
+
+    const formatDateForBackend = (dayjsDate) => {
+      if (!dayjsDate || !dayjsDate.isValid()) {
+        dayjsDate = dayjs();
+      }
+      
+      const timezoneOffset = dayjsDate.format('Z');
+      
+      const dateString = dayjsDate.format('YYYY-MM-DDTHH:mm:ss');
+      
+      return `${dateString}${timezoneOffset}`;
     };
   
     const handleSubmit = async (event) => {
@@ -83,28 +98,23 @@ export default function TransactionsModal({closeModal}) {
       setIsSubmitting(true);
   
       try {
-        const selectedDate = formData.createDate.startOf('day');
-        const createDateUTC = selectedDate.utc().startOf('day').format('YYYY-MM-DDTHH:mm:ss[Z]');
-  
+        const createDateFormatted = formatDateForBackend(formData.createDate);
+
         const incomeData = {
           amount: amountValue,
           category: formData.category,
-          createDate: createDateUTC,
+          createDate: createDateFormatted,
           description: formData.description || ''
         };
-  
-        console.log('Отправляемые данные:', incomeData);
-        console.log('Выбранная дата:', selectedDate.format('YYYY-MM-DD'));
-        console.log('UTC дата:', createDateUTC);
-  
+        
         await dispatch(fetchCreateIncome(incomeData)).unwrap();
         await dispatch(fetchIncomes()).unwrap();
         
         closeModal();
         
       } catch (error) {
-        console.error('Error creating expense:', error);
-        alert(`Ошибка при создании расхода: ${error.message}`);
+        console.error('Error creating income:', error);
+        alert(`Ошибка при создании дохода: ${error.message}`);
       } finally {
         setIsSubmitting(false);
       }
@@ -146,16 +156,23 @@ export default function TransactionsModal({closeModal}) {
                 </Select>
               </FormControl>
               <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
-                <DatePicker sx={{
-                  '& .MuiPickersInputBase-root': {color: "var(--font-color)", borderRadius: "30px"},
-                  '& fieldset': {borderColor: "#303030"},
-                  '&:hover fieldset': {borderColor: "var(--font-color) !important"},
-                  '&.Mui-focused fieldset': {borderColor: "var(--font-color) !important"},
-                  '& .MuiSvgIcon-root': {fill: "var(--main-color)"}
-                  }
-                }
-                value={formData.createDate}
-                onChange={handleDateChange}/>
+                <DatePicker 
+                  sx={{
+                    '& .MuiPickersInputBase-root': {color: "var(--font-color)", borderRadius: "30px"},
+                    '& fieldset': {borderColor: "#303030"},
+                    '&:hover fieldset': {borderColor: "var(--font-color) !important"},
+                    '&.Mui-focused fieldset': {borderColor: "var(--font-color) !important"},
+                    '& .MuiSvgIcon-root': {fill: "var(--main-color)"}
+                  }}
+                  value={formData.createDate}
+                  onChange={handleDateChange}
+                  format="DD.MM.YYYY"
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                    }
+                  }}
+                />
               </LocalizationProvider>
             </div>
 
@@ -163,7 +180,9 @@ export default function TransactionsModal({closeModal}) {
               <StyledInput style={{width: "100%", borderRadius: "0"}} label="Комментарий" onChange={handleDescriptionChange}/>
             </div>
 
-            <StyledButton style={{width: "100%"}} disabled={isSubmitting} type="submit">{isSubmitting ? 'Добавление...' : 'Добавить'}</StyledButton>
+            <StyledButton style={{width: "100%"}} disabled={isSubmitting} type="submit">
+              {isSubmitting ? 'Добавление...' : 'Добавить'}
+            </StyledButton>
         </div>
         </form>
       </div>

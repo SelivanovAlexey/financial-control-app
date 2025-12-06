@@ -1,8 +1,12 @@
 .header {
     display: flex;
-    justify-content: end;
+    align-items: center;
     padding: 20px;
     height: 100px;
+}
+
+.header__right {
+    margin-left: auto; /* Это прижимает блок к правому краю */
 }
 
 .avatar:hover {

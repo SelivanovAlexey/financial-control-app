@@ -178,3 +178,141 @@ export const calculateTotalAmount = (data) => {
   if (!data || !Array.isArray(data)) return 0;
   return data.reduce((total, item) => total + (item.amount || 0), 0);
 };
+
+// Функция для безопасного парсинга даты
+export const parseDateSafely = (dateInput) => {
+  if (!dateInput) return new Date();
+  
+  try {
+    // Если это уже Date объект
+    if (dateInput instanceof Date) {
+      return isNaN(dateInput.getTime()) ? new Date() : dateInput;
+    }
+    
+    // Если это число (timestamp)
+    if (typeof dateInput === 'number') {
+      const date = new Date(dateInput);
+      return isNaN(date.getTime()) ? new Date() : date;
+    }
+    
+    // Если это строка
+    if (typeof dateInput === 'string') {
+      let date;
+      
+      // Проверяем различные форматы строк
+      if (dateInput.includes('T')) {
+        // ISO формат или формат с временной зоной
+        if (dateInput.endsWith('Z') || dateInput.includes('+') || dateInput.includes('-')) {
+          // ISO 8601 с Z или смещением временной зоны
+          date = new Date(dateInput);
+        } else {
+          // ISO без временной зоны - добавляем Z чтобы парсить как UTC
+          date = new Date(dateInput + 'Z');
+        }
+      } 
+      // Формат YYYY-MM-DD (без времени)
+      else if (/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+        // Ключевое изменение: создаем дату с учетом локального времени
+        // Разбиваем на части и создаем Date с локальным временем
+        const [year, month, day] = dateInput.split('-').map(Number);
+        date = new Date(year, month - 1, day, 12, 0, 0); // Полдень по локальному времени
+      }
+      // Любая другая строка
+      else {
+        date = new Date(dateInput);
+      }
+      
+      if (isNaN(date.getTime())) {
+        console.warn('Не удалось распарсить дату:', dateInput);
+        return new Date();
+      }
+      
+      return date;
+    }
+    
+    return new Date();
+  } catch (error) {
+    console.error('Ошибка парсинга даты:', error, dateInput);
+    return new Date();
+  }
+};
+
+// Функция для форматирования даты в DD.MM.YYYY
+export const formatDateForDisplay = (dateInput) => {
+  try {
+    const date = parseDateSafely(dateInput);
+    
+    // Всегда используем локальные методы для отображения
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}.${month}.${year}`;
+  } catch (error) {
+    console.error('Ошибка форматирования даты:', error, dateInput);
+    return '';
+  }
+};
+
+// Функция для получения корректного timestamp для сортировки
+export const getTimestampForSorting = (dateInput) => {
+  try {
+    const date = parseDateSafely(dateInput);
+    return date.getTime();
+  } catch (error) {
+    console.error('Ошибка получения timestamp:', error, dateInput);
+    return Date.now();
+  }
+};
+
+// Функция для форматирования даты в ISO строку с временной зоной
+export const formatToISOWithTimezone = (dateInput) => {
+  try {
+    const date = parseDateSafely(dateInput);
+    
+    // Получаем компоненты даты в локальном времени
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    
+    // Получаем смещение временной зоны в минутах
+    const timezoneOffset = date.getTimezoneOffset();
+    const offsetHours = Math.abs(Math.floor(timezoneOffset / 60));
+    const offsetMinutes = Math.abs(timezoneOffset % 60);
+    const offsetSign = timezoneOffset > 0 ? '-' : '+';
+    
+    // Формат: 2025-12-06T19:29:20+03:00
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetSign}${offsetHours.toString().padStart(2, '0')}:${offsetMinutes.toString().padStart(2, '0')}`;
+  } catch (error) {
+    console.error('Ошибка форматирования в ISO:', error, dateInput);
+    // Fallback: текущая дата с временной зоной
+    const now = new Date();
+    const timezoneOffset = now.getTimezoneOffset();
+    const offsetHours = Math.abs(Math.floor(timezoneOffset / 60));
+    const offsetMinutes = Math.abs(timezoneOffset % 60);
+    const offsetSign = timezoneOffset > 0 ? '-' : '+';
+    
+    return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}T${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}${offsetSign}${offsetHours.toString().padStart(2, '0')}:${offsetMinutes.toString().padStart(2, '0')}`;
+  }
+};
+
+// Вспомогательная функция для создания корректной даты при отправке на бэкенд
+export const createDateForBackend = (dateString, timeString = '12:00') => {
+  // Если пришла строка в формате YYYY-MM-DD
+  if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    const [year, month, day] = dateString.split('-').map(Number);
+    const [hours = 12, minutes = 0] = timeString.split(':').map(Number);
+    
+    // Создаем дату с указанным временем в локальном часовом поясе
+    const date = new Date(year, month - 1, day, hours, minutes, 0);
+    
+    // Форматируем с временной зоной
+    return formatToISOWithTimezone(date);
+  }
+  
+  // Любая другая дата - форматируем как есть
+  return formatToISOWithTimezone(dateString);
+};

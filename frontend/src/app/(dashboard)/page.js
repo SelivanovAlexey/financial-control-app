@@ -48,7 +48,6 @@ export default function Home() {
   useEffect(() => {
     // Загружаем данные только один раз
     if (!dataLoadedRef.current) {
-      console.log('Загружаю данные...');
       dispatch(fetchExpenses());
       dispatch(fetchIncomes());
       dataLoadedRef.current = true;
@@ -69,16 +68,6 @@ export default function Home() {
   const expensesChartData = getDataByTimePeriod(filteredExpenses, period);
   const incomesChartData = getDataByTimePeriod(filteredIncomes, period);
 
-  // Отладка: выводим данные в консоль
-  useEffect(() => {
-    console.log('Расходы:', expenses);
-    console.log('Доходы:', incomes);
-    console.log('Отфильтрованные расходы:', filteredExpenses);
-    console.log('Отфильтрованные доходы:', filteredIncomes);
-    console.log('Сумма расходов:', expensesAll);
-    console.log('Сумма доходов:', incomesAll);
-  }, [expenses, incomes, filteredExpenses, filteredIncomes, expensesAll, incomesAll]);
-
   // Показываем загрузку или ошибку
   if (isLoading) {
     return <div style={{margin: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
@@ -91,7 +80,7 @@ export default function Home() {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container}> 
       <div className={styles.card_graph}>
         <div className={styles.card_graph_header}>
           <div style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "start"}}>

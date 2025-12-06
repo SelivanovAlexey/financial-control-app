@@ -22,8 +22,6 @@ const AuthCheck = ({ children }) => {
     if (initStarted.current) return;
     initStarted.current = true;
     
-    console.log('🔒 Начинаем проверку авторизации...');
-    
     dispatch(checkAuth());
   }, [dispatch]);
 
@@ -36,8 +34,6 @@ const AuthCheck = ({ children }) => {
     if (redirectAttempted.current) return;
 
     if (!isAuthenticated) {
-      console.log('🚫 Не авторизован, выполняю редирект...');
-
       redirectAttempted.current = true;
       router.push('/login');
       return;
@@ -45,7 +41,6 @@ const AuthCheck = ({ children }) => {
     
     // Если авторизован - начинаем загрузку данных
     if (isAuthenticated && !dataLoadStarted.current) {
-      console.log('✅ Авторизован, начинаю загрузку данных...');
       dataLoadStarted.current = true;
     }
   }, [isAuthenticated, isAuthChecked, router, dispatch]);

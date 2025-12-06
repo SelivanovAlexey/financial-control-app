@@ -10,41 +10,15 @@ import TableRow from '@mui/material/TableRow';
 import { useDispatch, useSelector } from "../../store";
 import { useEffect, useRef } from "react";
 import { fetchExpenses, fetchIncomes } from "@/reducers/userReducer";
+import { parseDateSafely, formatDateForDisplay, getTimestampForSorting, formatToISOWithTimezone, createDateForBackend } from "@/utils/Utils";
 
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  
-  try {
-    const date = new Date(dateString);
-    
-    if (isNaN(date.getTime())) {
-      const timestamp = parseInt(dateString);
-      if (!isNaN(timestamp)) {
-        return formatDate(new Date(timestamp * 1000).toISOString());
-      }
-      return '';
-    }
-    
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    
-    return `${day}.${month}.${year}`;
-  } catch (error) {
-    console.error('Ошибка форматирования даты:', error);
-    return '';
-  }
-};
 
 export default function History() {
-
   const dataCheckedRef = useRef(false);
-
   const dispatch = useDispatch();
   const { expenses, incomes, isLoading, userError } = useSelector(state => state.user);
   
   useEffect(() => {
-    // Проверяем, есть ли данные, и загружаем только если их нет
     if (!dataCheckedRef.current && expenses.length === 0 && incomes.length === 0) {
       dispatch(fetchExpenses());
       dispatch(fetchIncomes());
@@ -55,30 +29,45 @@ export default function History() {
   const sortedRows = React.useMemo(() => {
     const allTransactions = [];
 
+    // Обрабатываем расходы
     expenses.forEach(expense => {
+      const displayDate = formatDateForDisplay(expense.createDate);
+      const timestamp = getTimestampForSorting(expense.createDate);
+      const isoWithTZ = formatToISOWithTimezone(expense.createDate);
+      
       allTransactions.push({
         id: `expense_${expense.id}`,
-        date: formatDate(expense.createDate),
+        date: displayDate,
         category: expense.category,
         description: expense.description,
         amount: -expense.amount,
         type: 'expense',
-        timestamp: expense.createDate
+        timestamp: timestamp,
+        isoDate: isoWithTZ,
+        rawDate: expense.createDate // Сохраняем исходную дату для отладки
       });
     });
 
+    // Обрабатываем доходы
     (incomes || []).forEach(income => {
+      const displayDate = formatDateForDisplay(income.createDate);
+      const timestamp = getTimestampForSorting(income.createDate);
+      const isoWithTZ = formatToISOWithTimezone(income.createDate);
+      
       allTransactions.push({
         id: `income_${income.id}`,
-        date: formatDate(income.createDate),
+        date: displayDate,
         category: income.category,
         description: income.description,
         amount: income.amount,
         type: 'income',
-        timestamp: income.createDate
+        timestamp: timestamp,
+        isoDate: isoWithTZ,
+        rawDate: income.createDate // Сохраняем исходную дату для отладки
       });
     });
 
+    // Сортируем по timestamp (от новых к старым)
     const sorted = [...allTransactions].sort((a, b) => {
       return b.timestamp - a.timestamp;
     });
@@ -97,7 +86,6 @@ export default function History() {
     );
   }
 
-  // Показываем ошибку
   if (userError) {
     return (
       <div className={styles.table_container}>

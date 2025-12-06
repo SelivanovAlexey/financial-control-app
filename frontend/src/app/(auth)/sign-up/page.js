@@ -59,7 +59,6 @@ export default function SignUp() {
             const confirmPassword = formData.get('confirmPassword');
             const email = formData.get('email');
             const result = await dispatch(userSignUp({username, password, confirmPassword, email}));
-            console.log(result);
 
             if (result.meta.requestStatus === 'rejected') {
                 setErrors(prev => ({...prev, email: 'Не удалось зарегистрироваться'}));

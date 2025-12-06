@@ -14,7 +14,6 @@ export default function AuthInitializer({ children }) {
         try {
           console.log('Данные загружены')
         } catch (error) {
-          console.log('Сессия истекла, перенаправляем на логин');
           router.push('/login');
         }
       }
