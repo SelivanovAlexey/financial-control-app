@@ -73,6 +73,17 @@
     min-height: 500px; /* минимальная высота */
 }
 
+.card_graph_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    width: 100%;
+    padding: 1rem 0 0 1rem;
+    font-size: calc(40px + 2vmin);
+    font-weight: bold;
+    flex-shrink: 0; /* предотвращает сжатие */
+}
+
 .chart_container {
     width: 100%;
     height: 100%;
@@ -83,17 +94,6 @@
     justify-content: center;
     align-items: center;
     position: relative;
-}
-
-.card_graph_header {
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    width: 100%;
-    padding: 1rem 0;
-    font-size: calc(40px + 2vmin);
-    font-weight: bold;
-    flex-shrink: 0; /* предотвращает сжатие */
 }
 
 .card_header {
@@ -141,27 +141,30 @@
         font-size: 32px;
         text-align: center;
         margin: 0;
-        padding: 0;
+        padding: 5%;
         display: grid;
         grid-template-columns: 1fr;
         grid-template-rows: auto auto auto;
         max-height: none;
-        width: 100%;
     }
-    
+
     .card_graph {
-        grid-column: 1;
-        grid-row: 1;
-        margin: 0;
-        min-height: 400px; /* Устанавливаем минимальную высоту */
-        max-height: none; /* Убираем ограничение максимальной высоты */
-        height: auto; /* Высота автоматическая */
+    overflow-x: hidden;
+    min-height: 70vh;
+    max-height: 70vh;
     }
-    
+
+    .card_graph_header {
+    padding: 0.5rem 0;
+    flex-direction: column;
+    }
+
+    .card_graph_header_title {
+    margin-bottom: 0.5rem;
+    }
+
     .card {
-        height: auto;
-        margin: 0;
-        min-height: 300px; /* Минимальная высота для карточек */
-        padding: 20px;
+    min-height: 70vh;
+    max-height: 70vh;
     }
 }

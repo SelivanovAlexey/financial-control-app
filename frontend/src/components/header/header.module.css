@@ -5,6 +5,21 @@
     height: 100px;
 }
 
+@media (max-width: 768px) {
+    .header {
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1;
+        background: var(--background);
+        backdrop-filter: blur(50px);
+        -webkit-backdrop-filter: blur(50px);
+        opacity: 0.97;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+}
+
 .header__right {
     margin-left: auto; /* Это прижимает блок к правому краю */
 }

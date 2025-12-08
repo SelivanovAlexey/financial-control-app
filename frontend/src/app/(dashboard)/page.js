@@ -22,9 +22,9 @@ const margin = { right: 24, left: 24, bottom: 28 };
 
 export default function Home() {
   const theme = useTheme();
-  const isLaptop = useMediaQuery(theme.breakpoints.up('lg')); // 1280px и выше
-  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'lg')); // 600px - 1279px
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // до 600px
+  const isLaptop = useMediaQuery(theme.breakpoints.up('1280')); // 1280px и выше
+  const isTablet = useMediaQuery(theme.breakpoints.between('769', '1279')); // 600px - 1279px
+  const isMobile = useMediaQuery(theme.breakpoints.down('768'));
 
   const dataLoadedRef = useRef(false);
   const dispatch = useDispatch();
@@ -83,17 +83,29 @@ export default function Home() {
     <div className={styles.container}> 
       <div className={styles.card_graph}>
         <div className={styles.card_graph_header}>
-          <div style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "start"}}>
-            {expensesAll.toLocaleString('ru-RU')} ₽
-            <div style={{width: "auto", fontSize: "calc(8px + 2vmin)", fontWeight: "normal"}}>
-            Траты
+          {isMobile ? (
+            <div className={styles.card_graph_header_title}>
+              <div style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "start"}}>
+                {expensesAll.toLocaleString('ru-RU')} ₽
+                <div style={{width: "auto", fontSize: "calc(12px + 2vmin)", fontWeight: "normal"}}>
+                Траты</div>
+              </div>
             </div>
-          </div>
-          <div width="30%">
+          ) : (
+            <div style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "start"}}>
+              {expensesAll.toLocaleString('ru-RU')} ₽
+              <div style={{width: "auto", fontSize: "calc(8px + 2vmin)", fontWeight: "normal"}}>
+              Траты</div>
+            </div>
+          )}
+          <div style={isMobile ? {width: "100%"} : {}}>
             <Paper
               elevation={0}
-              sx={{
-                display: 'flex',
+              sx={isMobile ? {
+                backgroundColor: "transparent",
+                justifyContent: 'end',
+              } :
+              {
                 backgroundColor: "transparent",
               }}
             >
@@ -102,11 +114,7 @@ export default function Home() {
                 exclusive
                 onChange={handlePeriodChange}
                 aria-label="text alignment"
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr 1fr',
-                }}
-              >
+                sx={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr'}}>
                 <ToggleButton value="left" aria-label="left aligned" sx={{ color: "var(--main-color)", '&.Mui-selected': { color: "var(--font-color)", backgroundColor: "var(--accent-color)", transition: 'all 0.3s ease-in-out', '&:hover': { backgroundColor: "var(--accent-color)"}}}}>
                   Неделя
                 </ToggleButton>
@@ -131,7 +139,7 @@ export default function Home() {
                     justifyContent: "center",
                     color: "var(--font-color)",
                     fontSize: isMobile ? "12px" : "14px",
-                    padding: isMobile ? "1rem" : "2rem",
+                    padding: isMobile ? "0.5rem" : "2rem",
                   },
                   direction: 'horizontal',
                   position: { 
@@ -157,8 +165,8 @@ export default function Home() {
                   data: expensesByCategory,
                   startAngle: -270,
                   endAngle: 90,
-                  innerRadius: isMobile ? "60%" : isTablet ? "70%" : "80%",
-                  outerRadius: isMobile ? "80%" : isTablet ? "90%" : "100%",
+                  innerRadius: isMobile ? "75%" : isTablet ? "70%" : "80%",
+                  outerRadius: isMobile ? "100%" : isTablet ? "90%" : "100%",
                   paddingAngle: 5,
                   cornerRadius: 5,
                   highlightScope: { fade: 'global', highlight: 'item' },

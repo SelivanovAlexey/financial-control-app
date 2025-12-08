@@ -10,12 +10,28 @@ import { userLogout } from "@/reducers/userReducer";
 import PopupState, { bindTrigger, bindMenu } from 'material-ui-popup-state';
 import ListIcon from '@mui/icons-material/List';
 
-const settings = ['Profile','Logout'];
+const userSettings = ['Личный кабинет','Выйти'];
+const pageSettings = ['Дашборд', 'История операций'];
 
 const Header = ({isMobile}) => {
+    const [barItem, setBarItem] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
     const router = useRouter();
     const dispatch = useDispatch();
+
+    const handleOpenBarMenu = (event) => {
+        setBarItem(event.currentTarget);
+    };
+
+    const handleCloseBarMenu = (e) => {
+        const setting = e.target.textContent
+        if(setting === "Дашборд") {
+            router.push("/")
+        } else if(setting === "История операций") {
+            router.push("/history")
+        }
+        setBarItem(null);
+    }
 
     const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
@@ -23,9 +39,9 @@ const Header = ({isMobile}) => {
 
   const handleCloseUserMenu = (e) => {
     const setting = e.target.textContent
-    if(setting === 'Profile') {
+    if(setting === 'Личный кабинет') {
         router.push("/profile")
-    } else if(setting === 'Logout') {
+    } else if(setting === 'Выйти') {
         dispatch(userLogout());
     }
     setAnchorElUser(null);
@@ -33,22 +49,21 @@ const Header = ({isMobile}) => {
 
     return (
         <div className={styles.header}>
-        {isMobile && (
-            <div>
-                    <PopupState variant="popover" popupId="popup-menu" sx={{ display: "flex", alignItems: "center", gap: "15px" }}>
-                    {(popupState) => (
-                        <React.Fragment>
-                        <IconButton {...bindTrigger(popupState)}>
-                            <ListIcon sx={{color: "var(--main-color)", width: "40px", height: "40px", transition: "all 0.2s ease-in-out"}}/>
-                        </IconButton>
-                        <Menu {...bindMenu(popupState)}>
-                            <MenuItem onClick={popupState.close}>Дашборд</MenuItem>
-                            <MenuItem onClick={popupState.close}>История операций</MenuItem>
-                        </Menu>
-                        </React.Fragment>
-                    )}
-                    </PopupState>
-                </div>
+            {isMobile && (
+                <div>
+                        <div sx={{ display: "flex", alignItems: "center", gap: "15px" }}>
+                            <IconButton onClick={handleOpenBarMenu}>
+                                <ListIcon sx={{color: "var(--main-color)", width: "40px", height: "40px", transition: "all 0.2s ease-in-out"}}/>
+                            </IconButton>
+                            <Menu open={Boolean(barItem)} anchorEl={barItem} onClose={handleCloseBarMenu}>
+                                {pageSettings.map((setting) => (
+                                    <MenuItem key={setting} onClick={handleCloseBarMenu}>
+                                        <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+                                    </MenuItem>
+                                ))}
+                            </Menu>
+                        </div>
+                    </div>
             )}
             
             <div className={styles.header__right}>
@@ -77,7 +92,7 @@ const Header = ({isMobile}) => {
                         open={Boolean(anchorElUser)}
                         onClose={handleCloseUserMenu}
                         >
-                        {settings.map((setting) => (
+                        {userSettings.map((setting) => (
                             <MenuItem key={setting} onClick={handleCloseUserMenu}>
                             <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
                             </MenuItem>
