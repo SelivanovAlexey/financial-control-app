@@ -1,6 +1,6 @@
 package app.core.api;
 
-import app.core.model.Income;
+import app.core.model.IncomeEntity;
 
 import java.util.List;
 
@@ -15,22 +15,21 @@ public interface IncomeService {
      * @param id идентификатор доход.
      * @return сущность дохода
      */
-    Income get(Long id);
+    IncomeEntity get(Long id);
 
 
     /**
      * Добавить доход.
      *
-     * @param income сущность дохода
+     * @param incomeEntity сущность дохода
      * @return доход
      */
-    Income create(Income income);
+    IncomeEntity create(IncomeEntity incomeEntity);
 
     /**
      * Удалить доход по идентификатору.
      *
      * @param id идентификатор дохода
-     * @return удаленное дохода
      */
     void delete(Long id);
 
@@ -38,16 +37,16 @@ public interface IncomeService {
      * Обновить доход по идентификатору.
      *
      * @param id идентификатор дохода
-     * @param income доход
+     * @param incomeEntity доход
      * @return обновленное дохода
      */
-    Income update(Long id, Income income);
+    IncomeEntity update(Long id, IncomeEntity incomeEntity);
 
     /**
      * Получить все доходы юзера.
      *
      * @return список доходов юзера
      */
-    List<Income> getAllUserIncomes();
+    List<IncomeEntity> getAllUserIncomes();
 
 }

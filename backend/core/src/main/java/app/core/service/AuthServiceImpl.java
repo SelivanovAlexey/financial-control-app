@@ -24,8 +24,7 @@ public class AuthServiceImpl implements AuthService {
     private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
     private final RememberMeServices rememberMeServices;
 
-    public boolean authenticate(String username, String password, boolean rememberMe, HttpServletRequest request, HttpServletResponse response) {
-        boolean authenticated = false;
+    public void authenticate(String username, String password, boolean rememberMe, HttpServletRequest request, HttpServletResponse response) {
         try {
             UsernamePasswordAuthenticationToken authToken = UsernamePasswordAuthenticationToken.unauthenticated(username, password);
             log.debug("Authentication attempt for user w/ username={}", username);
@@ -40,7 +39,6 @@ public class AuthServiceImpl implements AuthService {
                     rememberMeServices.loginSuccess(request, response, authentication);
                 }
 
-                authenticated = true;
                 log.debug("User w/ username={} successfully authenticated", username);
             }
         } catch (Exception e) {
@@ -48,6 +46,5 @@ public class AuthServiceImpl implements AuthService {
             log.debug("Authentication failed for user w/ username={}", username);
             throw e;
         }
-        return authenticated;
     }
 }

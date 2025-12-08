@@ -1,7 +1,7 @@
 package app.core.controller;
 
 import app.core.api.IncomeService;
-import app.core.model.Income;
+import app.core.model.IncomeEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -25,14 +25,14 @@ public class IncomeController {
     private final IncomeService incomeService;
     @GetMapping("/{id}")
     @Operation(summary = "Получить информацию о доходе по id дохода")
-    public Income get(@PathVariable Long id) {
+    public IncomeEntity get(@PathVariable Long id) {
         return incomeService.get(id);
     }
 
     @PostMapping
     @Operation(summary = "Добавить доход для пользователя")
-    public Income create(@RequestBody Income income) {
-        return incomeService.create(income);
+    public IncomeEntity create(@RequestBody IncomeEntity incomeEntity) {
+        return incomeService.create(incomeEntity);
     }
 
     @DeleteMapping("/{id}")
@@ -43,13 +43,13 @@ public class IncomeController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Изменить доход по идентификатору дохода")
-    public Income update(@PathVariable Long id, @RequestBody Income updateIncome) {
-        return incomeService.update(id, updateIncome);
+    public IncomeEntity update(@PathVariable Long id, @RequestBody IncomeEntity updateIncomeEntity) {
+        return incomeService.update(id, updateIncomeEntity);
     }
 
     @GetMapping
     @Operation(summary = "Получить информацию о доходах пользователя")
-    public List<Income> getAllUserIncome() {
+    public List<IncomeEntity> getAllUserIncome() {
         return incomeService.getAllUserIncomes();
     }
 }

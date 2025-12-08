@@ -1,7 +1,7 @@
 package app.core.service;
 
 import app.core.api.IncomeService;
-import app.core.model.Income;
+import app.core.model.IncomeEntity;
 import app.core.model.User;
 import app.core.repository.IncomeRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,39 +25,44 @@ public class IncomeServiceImpl implements IncomeService {
     private final IncomeRepository incomeRepository;
 
     @Override
-    public Income get(Long id) {
-        return incomeRepository
-                .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id + "is not found!"));
+    public IncomeEntity get(Long id) {
+        IncomeEntity income = incomeRepository
+                .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id + " is not found!"));
+        checkAccess(income);
+        return income;
     }
 
     @Override
-    public Income create(Income income) {
-        income.setUser(getUser());
-        return incomeRepository.save(income);
+    public IncomeEntity create(IncomeEntity incomeEntity) {
+        incomeEntity.setUser(getUser());
+        return incomeRepository.save(incomeEntity);
     }
 
     @Override
     public void delete(Long id) {
-        Income income = incomeRepository
-                .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id +  "is not found!"));
-        incomeRepository.delete(income);
+        IncomeEntity incomeEntity = incomeRepository
+                .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id +  " is not found!"));
+        checkAccess(incomeEntity);
+        incomeRepository.delete(incomeEntity);
     }
 
     @Override
-    public Income update(Long id, Income newIncome) {
-        Income oldIncome = incomeRepository
-                .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id +  "is not found!"));
-        checkAccess(oldIncome);
+    public IncomeEntity update(Long id, IncomeEntity newIncomeEntity) {
+        IncomeEntity oldIncomeEntity = incomeRepository
+                .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id +  " is not found!"));
+        checkAccess(oldIncomeEntity);
 
-        oldIncome.setAmount(newIncome.getAmount());
-        oldIncome.setCategory(newIncome.getCategory());
-        oldIncome.setCreateDate(newIncome.getCreateDate());
+        //TODO: убрать бойлерплейт
+        oldIncomeEntity.setAmount(newIncomeEntity.getAmount());
+        oldIncomeEntity.setCategory(newIncomeEntity.getCategory());
+        oldIncomeEntity.setCreateDate(newIncomeEntity.getCreateDate());
+        oldIncomeEntity.setDescription(newIncomeEntity.getDescription());
 
-        return incomeRepository.save(oldIncome);
+        return incomeRepository.save(oldIncomeEntity);
     }
 
     @Override
-    public List<Income> getAllUserIncomes() {
+    public List<IncomeEntity> getAllUserIncomes() {
         User user = getUser();
         return incomeRepository.findAllByUserId(user.getId());
     }
@@ -67,9 +72,9 @@ public class IncomeServiceImpl implements IncomeService {
         return (User) authentication.getPrincipal();
     }
 
-    private void checkAccess(Income income) {
+    private void checkAccess(IncomeEntity incomeEntity) {
         User currentUser = getUser();
-        if (!income.getUser().getId().equals(currentUser.getId())) {
+        if (!incomeEntity.getUser().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("Access to this record is not allowed for current user");
         }
     }

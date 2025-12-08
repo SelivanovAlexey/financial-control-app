@@ -1,7 +1,7 @@
 package app.core.controller;
 
 import app.core.api.ExpenseService;
-import app.core.model.Expense;
+import app.core.model.ExpenseEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -25,14 +25,14 @@ public class ExpenseController {
     private final ExpenseService expenseService;
     @GetMapping("/{id}")
     @Operation(summary = "Получить информацию о расходе по id дохода")
-    public Expense get(@PathVariable Long id) {
+    public ExpenseEntity get(@PathVariable Long id) {
         return expenseService.get(id);
     }
 
     @PostMapping
     @Operation(summary = "Добавить расход для пользователя")
-    public Expense create(@RequestBody Expense expense) {
-        return expenseService.create(expense);
+    public ExpenseEntity create(@RequestBody ExpenseEntity expenseEntity) {
+        return expenseService.create(expenseEntity);
     }
 
     @DeleteMapping("/{id}")
@@ -43,13 +43,13 @@ public class ExpenseController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Изменить доход по идентификатору дохода")
-    public Expense update(@PathVariable Long id, @RequestBody Expense updateExpense) {
-        return expenseService.update(id, updateExpense);
+    public ExpenseEntity update(@PathVariable Long id, @RequestBody ExpenseEntity updateExpenseEntity) {
+        return expenseService.update(id, updateExpenseEntity);
     }
 
     @GetMapping
     @Operation(summary = "Получить информацию о доходах пользователя")
-    public List<Expense> getAllUserExpense() {
+    public List<ExpenseEntity> getAllUserExpense() {
         return expenseService.getAllUserExpenses();
     }
 }

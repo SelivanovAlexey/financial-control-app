@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -65,6 +66,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<CommonExceptionJson> usernameNotFoundExceptionHandler(UsernameNotFoundException e) {
         return buildResponse(HttpStatus.NOT_FOUND, "User not found", e);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<CommonExceptionJson> accessDeniedExceptionHandler(AccessDeniedException e) {
+        return buildResponse(HttpStatus.FORBIDDEN, "Access denied", e);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<CommonExceptionJson> illegalArgumentExceptionHandler(IllegalArgumentException e) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "Wrong data", e);
     }
 
     @ExceptionHandler(Exception.class)

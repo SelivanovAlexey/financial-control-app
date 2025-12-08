@@ -1,6 +1,6 @@
 package app.core.api;
 
-import app.core.model.Expense;
+import app.core.model.ExpenseEntity;
 
 import java.util.List;
 
@@ -15,16 +15,16 @@ public interface ExpenseService {
      * @param id идентификатор расход.
      * @return сущность расход
      */
-    Expense get(Long id);
+    ExpenseEntity get(Long id);
 
 
     /**
      * Добавить расход.
      *
-     * @param expense сущность расхода
+     * @param expenseEntity сущность расхода
      * @return расход
      */
-    Expense create(Expense expense);
+    ExpenseEntity create(ExpenseEntity expenseEntity);
 
     /**
      * Удалить расход по идентификатору.
@@ -38,16 +38,16 @@ public interface ExpenseService {
      * Обновить расход по идентификатору.
      *
      * @param id идентификатор расхода
-     * @param expense расход
+     * @param expenseEntity расход
      * @return обновленное расхода
      */
-    Expense update(Long id, Expense expense);
+    ExpenseEntity update(Long id, ExpenseEntity expenseEntity);
 
     /**
      * Получить все расходы юзера.
      *
      * @return список расходов юзера
      */
-    List<Expense> getAllUserExpenses();
+    List<ExpenseEntity> getAllUserExpenses();
 
 }
