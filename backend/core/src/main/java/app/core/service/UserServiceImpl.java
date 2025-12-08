@@ -23,7 +23,7 @@ public class UserServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findByUsername(username);
-        return user.orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return user.orElseThrow(() -> new UsernameNotFoundException("User with username '" + username + "' is not found in the system"));
     }
 
     public void createUser(String username, String rawPassword, String email) throws UserAlreadyExistsException {

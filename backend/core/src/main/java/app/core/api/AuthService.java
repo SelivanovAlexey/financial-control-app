@@ -4,5 +4,5 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
-    boolean authenticate(String username, String password, boolean rememberMe, HttpServletRequest request, HttpServletResponse response);
+    void authenticate(String username, String password, boolean rememberMe, HttpServletRequest request, HttpServletResponse response);
 }

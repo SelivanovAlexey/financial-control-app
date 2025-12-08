@@ -5,5 +5,5 @@ import lombok.Builder;
 import java.util.Map;
 
 @Builder
-public record ValidationExceptionJson(Map<String, String> errors, String msg) {
+public record ValidationExceptionJson(String msg, Map<String, String> errors) {
 }

@@ -1,6 +1,6 @@
 package app.core.repository;
 
-import app.core.model.Expense;
+import app.core.model.ExpenseEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,8 +15,8 @@ import java.util.List;
  * а также возможность добавления собственных запросов
  */
 @Repository
-public interface ExpenseRepository extends JpaRepository<Expense, Long> {
+public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 
-    @Query("SELECT e FROM Expense e WHERE e.user.id = :userId ORDER BY e.createDate DESC")
-    List<Expense> findAllByUserId(@Param("userId") Long userId);
+    @Query("SELECT e FROM ExpenseEntity e WHERE e.user.id = :userId ORDER BY e.createDate DESC")
+    List<ExpenseEntity> findAllByUserId(@Param("userId") Long userId);
 }
