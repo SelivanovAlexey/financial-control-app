@@ -5,9 +5,9 @@ DROP CONSTRAINT IF EXISTS expenses_user_fk,
     DROP COLUMN IF EXISTS user_id,
     DROP COLUMN IF EXISTS description;
 
-DROP INDEX IF EXISTS idx_income_user_id;
+DROP INDEX IF EXISTS idx_incomes_user_id;
 
-ALTER TABLE public.income
-DROP CONSTRAINT IF EXISTS income_user_fk,
+ALTER TABLE public.incomes
+DROP CONSTRAINT IF EXISTS incomes_user_fk,
     DROP COLUMN IF EXISTS user_id,
     DROP COLUMN IF EXISTS description;
