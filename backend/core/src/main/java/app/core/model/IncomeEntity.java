@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "income", schema = "public")
-@SequenceGenerator(name = "transaction_seq", sequenceName = "income_seq", allocationSize = 1)
+@Table(name = "incomes", schema = "public")
+@SequenceGenerator(name = "transaction_seq", sequenceName = "incomes_seq", allocationSize = 1)
 public class IncomeEntity extends TransactionBaseEntity {
 }

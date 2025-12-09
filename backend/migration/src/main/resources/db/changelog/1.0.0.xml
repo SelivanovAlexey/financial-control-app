@@ -7,13 +7,13 @@
     <changeSet id="init tables" author="eikhe">
         <comment>Создание начальной структуры таблиц</comment>
 
-        <sqlFile path="1.0.0/create-income.sql" relativeToChangelogFile="true"/>
+        <sqlFile path="1.0.0/create-incomes.sql" relativeToChangelogFile="true"/>
         <sqlFile path="1.0.0/create-expenses.sql" relativeToChangelogFile="true"/>
 
 
         <rollback>
             <sqlFile path="1.0.0/rollback/create-expenses-rollback.sql" relativeToChangelogFile="true"/>
-            <sqlFile path="1.0.0/rollback/create-income-rollback.sql" relativeToChangelogFile="true"/>
+            <sqlFile path="1.0.0/rollback/create-incomes-rollback.sql" relativeToChangelogFile="true"/>
         </rollback>
 
     </changeSet>
