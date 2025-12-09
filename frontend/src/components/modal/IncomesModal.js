@@ -24,7 +24,7 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-export default function TransactionsModal({closeModal}) {
+export default function TransactionsModal({isMobile, closeModal}) {
   const dispatch = useDispatch();
 
   const incomeCategories = [

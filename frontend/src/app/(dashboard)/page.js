@@ -22,8 +22,6 @@ const margin = { right: 24, left: 24, bottom: 28 };
 
 export default function Home() {
   const theme = useTheme();
-  const isLaptop = useMediaQuery(theme.breakpoints.up('1280')); // 1280px и выше
-  const isTablet = useMediaQuery(theme.breakpoints.between('769', '1279')); // 600px - 1279px
   const isMobile = useMediaQuery(theme.breakpoints.down('768'));
 
   const dataLoadedRef = useRef(false);
@@ -151,14 +149,15 @@ export default function Home() {
               sx={{
                 width: "100%",
                 height: "100%",
-                "& .css-yqw5vn-MuiPieArc-root": {
-                  strokeWidth: 0
-                },
                 [`& .${pieArcLabelClasses.root}`]: {
                   fontWeight: 'bold',
                   fill: 'var(--font-color)',
                   fontSize: isMobile ? '14px' : '18px'
                 },
+                '& .MuiPieArc-root, & .MuiPieArc-highlighted': {
+                  stroke: 'transparent',
+                  strokeWidth: 0,
+                }
               }}
               series={[
                 {
@@ -172,6 +171,7 @@ export default function Home() {
                   highlightScope: { fade: 'global', highlight: 'item' },
                   arcLabelRadius: isMobile ? "50%" : isTablet ? "55%" : "60%",
                   arcLabel: (item) => expensesAll > 0 ? `${(item.value / expensesAll * 100).toFixed(2)} %` : '0%',
+                  
                 }
               ]}
             />
@@ -194,10 +194,18 @@ export default function Home() {
         <div className={styles.card_header}>
           Доходы
           <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-            <div style={{fontSize: 'calc(16px + 1vmin)', fontWeight: 'bold'}}>
-              {incomesAll.toLocaleString('ru-RU')} ₽
-            </div>
-            <StyledButton onClick={handleIncomeModalOpen}>Добавить</StyledButton>
+            {isMobile ?  
+              <div style={{fontSize: 'calc(16px + 2vmin)', fontWeight: 'bold'}}>
+                {incomesAll.toLocaleString('ru-RU')} ₽
+              </div>
+            :
+              <div style={{fontSize: 'calc(16px + 1vmin)', fontWeight: 'bold'}}>
+                {incomesAll.toLocaleString('ru-RU')} ₽
+              </div>
+            }
+            {!isMobile && (
+              <StyledButton onClick={handleIncomeModalOpen}>Добавить</StyledButton>
+            )}
           </div>
           <Modal
             open={incomesModalOpen}
@@ -206,12 +214,12 @@ export default function Home() {
             aria-describedby="modal-modal-description"
           >
             <div className={styles.modal}>
-              <IncomesModal closeModal={handleIncomeModalClose}/>
+              <IncomesModal isMobile={isMobile} closeModal={handleIncomeModalClose}/>
             </div>
           </Modal>
         </div>
         <div className={styles.card_body}>
-          {incomesChartData.data.length > 0 ? (
+          {incomesChartData.data.some((item) => item !== 0) ? (
             <LineChart
               height={250}
               series={[
@@ -225,12 +233,15 @@ export default function Home() {
               ]}
               yAxis={[
                 {
-                  width: 50,
+                  width: 30,
                 }
               ]}
               margin={margin}
               grid={{ vertical: true, horizontal: true }}
               sx={{
+                "& .MuiMarkElement-root": {
+                  r: 4
+                },
                 "& .MuiChartsAxis-left .MuiChartsAxis-tickLabel":{
                   fill:"#fff",
                   opacity:0.7
@@ -246,32 +257,43 @@ export default function Home() {
                 "& .MuiChartsAxis-left .MuiChartsAxis-line":{
                   stroke:"#fff",
                   opacity:0.7
-                }
+                },
+                width: "100%",
+                height: "100%",
               }}
             />
           ) : (
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              height: '250px',
+            <div style={{
               color: 'var(--font-color)',
               fontSize: 'calc(10px + 1vmin)'
             }}>
               Нет данных о доходах
             </div>
           )}
+          {isMobile && (
+            <div className={styles.card_footer}>
+              <StyledButton style={{width: '100%'}} onClick={handleIncomeModalOpen}>Добавить</StyledButton>
+            </div>
+          )}
         </div>
       </div>
       
-      <div className={styles.card}>
+      <div className={styles.card} style={{marginBottom: "2rem"}}>
         <div className={styles.card_header}>
           Расходы
           <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-            <div style={{fontSize: 'calc(16px + 1vmin)', fontWeight: 'bold'}}>
-              {expensesAll.toLocaleString('ru-RU')} ₽
-            </div>
-            <StyledButton onClick={handleExpensesModalOpen}>Добавить</StyledButton>
+            {isMobile ?  
+              <div style={{fontSize: 'calc(16px + 2vmin)', fontWeight: 'bold'}}>
+                {expensesAll.toLocaleString('ru-RU')} ₽
+              </div>
+            :
+              <div style={{fontSize: 'calc(16px + 1vmin)', fontWeight: 'bold'}}>
+                {expensesAll.toLocaleString('ru-RU')} ₽
+              </div>
+            }
+            {!isMobile && (
+              <StyledButton onClick={handleExpensesModalOpen}>Добавить</StyledButton>
+            )}
           </div>
           <Modal
             open={expensesModalOpen}
@@ -285,11 +307,13 @@ export default function Home() {
           </Modal>
         </div>
         <div className={styles.card_body}>
-          {expensesChartData.data.length > 0 ? (
+          {expensesChartData.data.some((item) => item !== 0) ? (
             <LineChart
               height={250}
               series={[
-                { data: expensesChartData.data, color: `var(--red-color)` },
+                { data: expensesChartData.data,
+                  color: `var(--red-color)`,
+                },
               ]}
               xAxis={[
                 {
@@ -299,12 +323,15 @@ export default function Home() {
               ]}
               yAxis={[
                 {
-                  width: 50,
+                  width: 30,
                 }
               ]}
               margin={margin}
               grid={{ vertical: true, horizontal: true }}
               sx={{
+                "& .MuiMarkElement-root": {
+                  r: 4
+                },
                 "& .MuiChartsAxis-left .MuiChartsAxis-tickLabel":{
                   fill:"#fff",
                   opacity:0.7
@@ -320,19 +347,22 @@ export default function Home() {
                 "& .MuiChartsAxis-left .MuiChartsAxis-line":{
                   stroke:"#fff",
                   opacity:0.7
-                }
+                },
+                width: "100%",
+                height: "100%",
               }}
             />
           ) : (
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              height: '250px',
+            <div style={{
               color: 'var(--font-color)',
               fontSize: 'calc(10px + 1vmin)'
             }}>
               Нет данных о расходах
+            </div>
+          )}
+          {isMobile && (
+            <div className={styles.card_footer}>
+              <StyledButton style={{width: '100%'}} onClick={handleExpensesModalOpen}>Добавить</StyledButton>
             </div>
           )}
         </div>
