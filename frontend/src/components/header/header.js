@@ -1,13 +1,10 @@
 "use client";
 import React from "react";
 import styles from "./header.module.css";
-import { Avatar, Box, IconButton, Menu, MenuItem, Tooltip, Typography, Button } from "@mui/material";
-import StyledMainInput from "../input/StyledMainInput";
-import CustomDrawer from "../drawer/CustomDrawer";
+import { Avatar, Box, IconButton, Menu, MenuItem, Tooltip, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "@/app/store";
 import { userLogout } from "@/reducers/userReducer";
-import PopupState, { bindTrigger, bindMenu } from 'material-ui-popup-state';
 import ListIcon from '@mui/icons-material/List';
 
 const userSettings = ['Личный кабинет','Выйти'];

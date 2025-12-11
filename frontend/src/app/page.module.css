@@ -10,22 +10,6 @@
     max-height: 70vh;
 }
 
-.table_header {
-    font-weight: 400;
-    font-size: 32px;
-    display: flex;
-    color: var(--font-color);
-    margin-bottom: 40px;
-}
-
-.table_container {
-    font-weight: 400;
-    font-size: 32px;
-    text-align: center;
-    margin: 64px 80px;
-    color: var(--font-color);
-}
-
 .transactions_container {
     font-weight: 400;
     font-size: 32px;
@@ -36,7 +20,6 @@
 }
 
 .card {
-    height: 35vh;
     border-radius: 30px;
     overflow-y: hidden;
     display: flex;
@@ -45,6 +28,8 @@
     background-color: var(--foreground);
     width: 100%;
     padding: 3%;
+    min-height: 34vh;
+    height: 100%;
 }
 
 .card_transactions {
@@ -69,7 +54,7 @@
     grid-row: span 2 / auto;
     width: 100%;
     padding: 1rem;
-    min-height: 500px; /* минимальная высота */
+    height: 100%;
 }
 
 .card_graph_header {
@@ -146,6 +131,78 @@
     transform: translate(-50%, -50%)
 }
 
+.history_container {
+    margin: 4% 7%;
+}
+
+.history_title {
+    font-weight: 400;
+    font-size: 32px;
+    display: flex;
+    color: var(--font-color);
+    margin-bottom: 40px;
+}
+
+.history_list {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 10px;
+}
+
+.history_item {
+    background: var(--foreground);
+    border: none;
+    color: var(--font-color);
+    border-radius: 20px;
+}
+
+.history_item_content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 30px;
+    font-size: calc(12px + 1vmin);
+}
+
+.history_item_type {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 20px;
+    width: 50%;
+}
+
+.history_item_info_left {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+    width: 100%;
+    gap: 10px;
+}
+
+.history_item_desc {
+    font-size: calc(8px + 1vmin);
+    color: var(--main-color);
+    text-align: left;
+}
+
+.history_item_info_right {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 60px;
+    font-size: calc(12px + 1vmin);
+}
+
+.history_item_amount {
+    width: 200px;
+}
+
 @media (max-width: 767px) {
     .container {
         font-weight: 400;
@@ -187,5 +244,15 @@
 
     .modal {
     width: 90%;
+    }
+
+    .history_title {
+    font-size: 24px;
 }
+
+    .history_item {
+    font-size: calc(12px + 1vmin);
+    display: flex;
+    justify-content: space-between;
+    }
 }

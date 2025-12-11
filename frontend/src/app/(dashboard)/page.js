@@ -164,12 +164,12 @@ export default function Home() {
                   data: expensesByCategory,
                   startAngle: -270,
                   endAngle: 90,
-                  innerRadius: isMobile ? "75%" : isTablet ? "70%" : "80%",
-                  outerRadius: isMobile ? "100%" : isTablet ? "90%" : "100%",
+                  innerRadius: isMobile ? "75%" : "80%",
+                  outerRadius: isMobile ? "100%" : "100%",
                   paddingAngle: 5,
                   cornerRadius: 5,
                   highlightScope: { fade: 'global', highlight: 'item' },
-                  arcLabelRadius: isMobile ? "50%" : isTablet ? "55%" : "60%",
+                  arcLabelRadius: isMobile ? "50%" : "60%",
                   arcLabel: (item) => expensesAll > 0 ? `${(item.value / expensesAll * 100).toFixed(2)} %` : '0%',
                   
                 }
@@ -233,7 +233,20 @@ export default function Home() {
               ]}
               yAxis={[
                 {
-                  width: 30,
+                  valueFormatter: (value) => {
+                    if (Math.abs(value) >= 1000000) {
+                      const num = Math.abs(value) / 1000000;
+                      const sign = value < 0 ? "-" : "";
+                      const formattedNum = num % 1 === 0 ? num.toString() : num.toFixed(1);
+                      return `${sign}${formattedNum.replace('.0', '')}M`;
+                    } else if (Math.abs(value) >= 1000) {
+                      const num = Math.abs(value) / 1000;
+                      const sign = value < 0 ? "-" : "";
+                      const formattedNum = num % 1 === 0 ? num.toString() : num.toFixed(1);
+                      return `${sign}${formattedNum.replace('.0', '')}K`;
+                    }
+                    return value.toString();
+                  }
                 }
               ]}
               margin={margin}
@@ -311,7 +324,8 @@ export default function Home() {
             <LineChart
               height={250}
               series={[
-                { data: expensesChartData.data,
+                { 
+                  data: expensesChartData.data,
                   color: `var(--red-color)`,
                 },
               ]}
@@ -323,7 +337,20 @@ export default function Home() {
               ]}
               yAxis={[
                 {
-                  width: 30,
+                  valueFormatter: (value) => {
+                    if (Math.abs(value) >= 1000000) {
+                      const num = Math.abs(value) / 1000000;
+                      const sign = value < 0 ? "-" : "";
+                      const formattedNum = num % 1 === 0 ? num.toString() : num.toFixed(1);
+                      return `${sign}${formattedNum.replace('.0', '')}M`;
+                    } else if (Math.abs(value) >= 1000) {
+                      const num = Math.abs(value) / 1000;
+                      const sign = value < 0 ? "-" : "";
+                      const formattedNum = num % 1 === 0 ? num.toString() : num.toFixed(1);
+                      return `${sign}${formattedNum.replace('.0', '')}K`;
+                    }
+                    return value.toString();
+                  }
                 }
               ]}
               margin={margin}
@@ -350,6 +377,16 @@ export default function Home() {
                 },
                 width: "100%",
                 height: "100%",
+              }}
+              slotProps={{
+                axis: {
+                  left: {
+                    disableTicks: true,
+                    tickLabelStyle: {
+                      fontSize: 12,
+                    },
+                  },
+                },
               }}
             />
           ) : (
