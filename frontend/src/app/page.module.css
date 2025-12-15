@@ -252,7 +252,43 @@
 
     .history_item {
     font-size: calc(12px + 1vmin);
-    display: flex;
-    justify-content: space-between;
+    }
+
+    .collapse_category {
+        margin-left: 5%;
+        font-weight: 500;
+    }
+
+    .collapse_right {
+        display: flex;
+        justify-content: end;
+        align-items: center;
+        flex-direction: row;
+        width: 100%;
+        gap: 5%;
+    }
+
+    .collapse_date_amount {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .collapse_date {
+        color: var(--main-color);
+    }
+
+    .description_content {
+        color: var(--font-color);
+        padding: 0 0 16px 0;
+        font-size: calc(12px + 1vmin);
+    }
+
+    .no_description {
+        color: var(--main-color);
+        padding: 0 0 16px 0;
+        font-size: calc(12px + 1vmin);
+        font-style: italic;
     }
 }

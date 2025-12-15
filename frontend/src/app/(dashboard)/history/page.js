@@ -14,7 +14,7 @@ import { parseDateSafely, formatDateForDisplay, getTimestampForSorting, formatTo
 import { useTheme } from '@mui/material/styles';
 import { IconButton, useMediaQuery, Menu, MenuItem, Typography } from '@mui/material';
 import { Avatar, Card, Flex, Grid, Divider, Collapse, Button } from 'antd'; 
-import { ArrowDownOutlined, ArrowUpOutlined, MoreOutlined  } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined, MoreOutlined, RightOutlined  } from '@ant-design/icons';
 
 const historySettings = ['Редактировать','Удалить'];
 
@@ -95,7 +95,8 @@ export default function History() {
     setSelectedItem(item);
   };
 
-  const handleMenuClose = () => {
+  const handleMenuClose = (e) => {
+    e.stopPropagation();
     setAnchorEl(null);
     setSelectedItem(null);
   };
@@ -183,7 +184,10 @@ export default function History() {
               </div>
               
               <div className={styles.history_item_actions}>
-                <IconButton size='large' onClick={(e) => handleMenuClick(e, row)}>
+                <IconButton size='large' onClick={(e) => (
+                        e.stopPropagation(),
+                        handleMenuClick(e, row)
+                )}>
                   <MoreOutlined style={{color: "var(--main-color)"}}/>
                 </IconButton>
                 <Menu
@@ -219,21 +223,99 @@ export default function History() {
           {sortedRows.map((row, index) => (
             <Collapse 
               key={index} 
-              className={styles.history_item}
+              className={`${styles.history_item} custom-collapse-item`}
+              ghost
               style={{
                 backgroundColor: 'var(--foreground)',
                 color: 'var(--font-color)',
               }}
+              expandIconPlacement="start"
+              expandIcon={({ isActive }) => (
+                <div style={{
+                  paddingTop: '26px',
+                }}>
+                  <RightOutlined 
+                    rotate={isActive ? 90 : 0}
+                    style={{
+                      color: 'var(--main-color)',
+                      transition: 'transform 0.3s',
+                      fontSize: '12px',
+                    }}
+                  />
+                </div>
+              )}
               items={[{
                 key: index,
-                showArrow: false,
+                showArrow: true,
                 label: (
-                  <div className={styles.collapse_label}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    width: '100%',
+                    justifyContent: 'space-between',
+                    color: 'var(--font-color)',
+                  }}>
+                    {/* Avatar */}
                     <div className={styles.collapse_icon}>
-                      <Avatar shape="square" style={{borderRadius: "10px"}} size={40} icon={row.type === "expense" ? <ArrowUpOutlined style={{color: "var(--red-color)"}}/> : <ArrowDownOutlined style={{color: "var(--accent-color)"}}/>} />
+                      <Avatar 
+                        shape="square" 
+                        style={{borderRadius: "10px"}} 
+                        size={40} 
+                        icon={row.type === "expense" ? 
+                          <ArrowUpOutlined style={{color: "var(--red-color)"}}/> : 
+                          <ArrowDownOutlined style={{color: "var(--accent-color)"}}/>
+                        } 
+                      />
                     </div>
+                    
+                    <div className={styles.collapse_category}>
+                      {row.category}
+                    </div>
+
+                    <div className={styles.collapse_right}>
+                      <div className={styles.collapse_date_amount}>
+                        <div className={styles.collapse_date}>{row.date}</div>
+                        <div>{row.type === "expense" ? "" : "+"} {row.amount} ₽</div>
+                      </div>
+                      <div className={styles.collapse_actions}>
+                      <IconButton size='small' onClick={(e) => (
+                        e.stopPropagation(),
+                        handleMenuClick(e, row)
+                      )}>
+                        <MoreOutlined style={{color: "var(--main-color)"}}/>
+                      </IconButton>
+                      <Menu
+                        sx={{ mt: '65px'}}
+                        id="menu-appbar"
+                        anchorEl={anchorEl}
+                        anchorOrigin={{
+                          vertical: 'top',
+                          horizontal: 'right',
+                        }}
+                        keepMounted
+                        transformOrigin={{
+                          vertical: 'top',
+                          horizontal: 'right',
+                        }}
+                        open={Boolean(anchorEl)}
+                        onClose={handleMenuClose}
+                      >
+                        {historySettings.map((setting) => (
+                          <MenuItem key={setting} onClick={handleMenuClose}>
+                            <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+                          </MenuItem>
+                              ))}
+                        </Menu>
+                    </div>
+                    </div>
+                    
                   </div>
-                )
+                ),
+                children: row.description.length > 0 ? (
+                  <div className={styles.description_content}>
+                    {row.description}
+                  </div>
+                ) : <div className={styles.no_description}>Комментария еще нет</div> 
               }]}
             />
           ))}
