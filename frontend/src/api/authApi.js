@@ -67,3 +67,17 @@ export function createIncome (data) {
         credentials: 'include',
     })
 }
+
+export function deleteExpense (id) {
+    return fetch(`${URL}/api/expenses/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    })
+}
+
+export function deleteIncome (id) {
+    return fetch(`${URL}/api/incomes/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    })
+}

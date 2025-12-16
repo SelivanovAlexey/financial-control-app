@@ -1,22 +1,32 @@
 "use client";
 import styles from "@/app/page.module.css";
 import * as React from 'react';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import { useDispatch, useSelector } from "../../store";
 import { useEffect, useRef, useState } from "react";
-import { fetchExpenses, fetchIncomes } from "@/reducers/userReducer";
-import { parseDateSafely, formatDateForDisplay, getTimestampForSorting, formatToISOWithTimezone, createDateForBackend } from "@/utils/Utils";
+import { fetchExpenses, fetchIncomes, fetchDeleteExpense, fetchDeleteIncome } from "@/reducers/userReducer";
+import { formatDateForDisplay, getTimestampForSorting, formatToISOWithTimezone, createDateForBackend } from "@/utils/Utils";
 import { useTheme } from '@mui/material/styles';
 import { IconButton, useMediaQuery, Menu, MenuItem, Typography } from '@mui/material';
-import { Avatar, Card, Flex, Grid, Divider, Collapse, Button } from 'antd'; 
-import { ArrowDownOutlined, ArrowUpOutlined, MoreOutlined, RightOutlined  } from '@ant-design/icons';
+import { Avatar, Card, Flex, Grid, Divider, Collapse, Select } from 'antd'; 
+import { ArrowDownOutlined, ArrowUpOutlined, MoreOutlined, RightOutlined, DownOutlined  } from '@ant-design/icons';
 
-const historySettings = ['Редактировать','Удалить'];
+const historySettings = ['Удалить'];
+const filterOptions =
+  [
+    {
+      value: 'all',
+      label: 'Все',
+    },
+    {
+      value: 'expenses',
+      label: 'Расходы',
+    },
+    {
+      value: 'incomes',
+      label: 'Доходы',
+    },
+  ]
+
 
 export default function History() {
   const theme = useTheme();
@@ -29,6 +39,8 @@ export default function History() {
   const [deletingId, setDeletingId] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [filter, setFilter] = useState('all');
+
   
   useEffect(() => {
     if (!dataCheckedRef.current && expenses.length === 0 && incomes.length === 0) {
@@ -89,6 +101,17 @@ export default function History() {
     return sorted;
   }, [expenses, incomes]);
 
+  const filteredRows = React.useMemo(() => {
+    if (filter === 'all') {
+      return sortedRows;
+    } else if (filter === 'expenses') {
+      return sortedRows.filter(row => row.type === 'expense');
+    } else if (filter === 'incomes') {
+      return sortedRows.filter(row => row.type === 'income');
+    }
+    return sortedRows;
+  }, [sortedRows, filter]);
+
   // Обработчики меню
   const handleMenuClick = (event, item) => {
     setAnchorEl(event.currentTarget);
@@ -96,27 +119,34 @@ export default function History() {
   };
 
   const handleMenuClose = (e) => {
-    e.stopPropagation();
     setAnchorEl(null);
     setSelectedItem(null);
   };
 
   const handleDelete = async (id, dataType) => {
+    const prefix = dataType === 'expense' ? 'expense_' : 'income_';
+    const numericId = id.startsWith(prefix) 
+      ? parseInt(id.replace(prefix, ''), 10)
+      : parseInt(id, 10);
+    
+    if (isNaN(numericId)) {
+      console.error('Некорректный ID для удаления:', id);
+      return;
+    }
+    
     setDeletingId(id);
     
     try {
-      // АПИ для удаления операции
-      // if (dataType === 'expense') {
-      //   // await dispatch(deleteExpense(id));
-      // } else if (dataType === 'income') {
-      //   // await dispatch(deleteIncome(id));
-      // }
+      if (dataType === 'expense') {
+        await dispatch(fetchDeleteExpense(numericId));
+      } else if (dataType === 'income') {
+        await dispatch(fetchDeleteIncome(numericId));
+      }
       
-      // После успешного удаления можно обновить данные
-      // dispatch(fetchExpenses());
-      // dispatch(fetchIncomes());
+      dispatch(fetchExpenses());
+      dispatch(fetchIncomes());
       
-      console.log(`Удаление операции ${dataType} с ID: ${id}`);
+      handleMenuClose();
       
     } catch (error) {
       console.error('Ошибка при удалении:', error);
@@ -125,10 +155,22 @@ export default function History() {
     }
   };
 
-  const handleEdit = (id, dataType) => {
-    console.log(`Редактирование операции ${dataType} с ID: ${id}`);
-    // Реализация редактирования
+  const handleFilterChange = (value) => {
+    setFilter(value);
+    if (value === 'all') {
+      dispatch(fetchExpenses());
+      dispatch(fetchIncomes());
+    } else if (value === 'expenses') {
+      dispatch(fetchExpenses());
+    } else if (value === 'incomes') {
+      dispatch(fetchIncomes());
+    }
   };
+
+  // const handleEdit = (id, dataType) => {
+  //   console.log(`Редактирование операции ${dataType} с ID: ${id}`);
+  //   // Реализация редактирования
+  // };
 
   if (isLoading) {
     return (
@@ -155,10 +197,34 @@ export default function History() {
   return (
     sortedRows.length > 0 ? (
       <div className={styles.history_container}>
-        <div className={styles.history_title}>История операций</div>
+        <div className={styles.history_title}>
+          <div className={styles.history_title_text}>История операций</div>
+          <div className={styles.history_title_filter}>
+            <Select
+              variant="underlined"
+              style={{ 
+                width: "100%", 
+                background: "var(--background)", 
+                color: "var(--font-color)", 
+                fontSize: "calc(8px + 1vh)"
+              }}
+              suffixIcon={
+                <DownOutlined style={{ color: "var(--main-color)" }} />
+              }
+              value={filter}
+              options={filterOptions}
+              onChange={handleFilterChange}
+              popupRender={menu => (
+                <div className={styles.select_menu}>
+                  {menu}
+                </div>
+              )}
+            />
+          </div>
+        </div>
         {!isMobile && (
           <div className={styles.history_list}>
-          {sortedRows.map((row, index) => (
+          {filteredRows.map((row, index) => (
             <Card key={index} className={styles.history_item}>
             <div className={styles.history_item_content}>
               <div className={styles.history_item_type}>
@@ -207,7 +273,11 @@ export default function History() {
                   onClose={handleMenuClose}
                 >
                   {historySettings.map((setting) => (
-                    <MenuItem key={setting} onClick={handleMenuClose}>
+                    <MenuItem key={setting} onClick={() => {
+                      if (selectedItem) {
+                        handleDelete(selectedItem.id, selectedItem.dataType);
+                      }
+                    }}>
                       <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
                     </MenuItem>
                         ))}
@@ -220,7 +290,7 @@ export default function History() {
         )}
         {isMobile && (
           <div className={styles.history_list}>
-          {sortedRows.map((row, index) => (
+          {filteredRows.map((row, index) => (
             <Collapse 
               key={index} 
               className={`${styles.history_item} custom-collapse-item`}
@@ -301,7 +371,11 @@ export default function History() {
                         onClose={handleMenuClose}
                       >
                         {historySettings.map((setting) => (
-                          <MenuItem key={setting} onClick={handleMenuClose}>
+                          <MenuItem key={setting} onClick={() => {
+                            if (selectedItem) {
+                              handleDelete(selectedItem.id, selectedItem.dataType);
+                            }
+                          }}>
                             <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
                           </MenuItem>
                               ))}

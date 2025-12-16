@@ -205,6 +205,7 @@ export default function Transactions({closeModal}) {
                 label="Комментарий" 
                 value={formData.description} 
                 onChange={handleDescriptionChange}
+                inputProps={{ maxLength: 50 }}
               />
             </div>
             

@@ -276,7 +276,7 @@ export default function Home() {
               }}
             />
           ) : (
-            <div style={{
+            <div className={styles.card_body} style={{
               color: 'var(--font-color)',
               fontSize: 'calc(10px + 1vmin)'
             }}>
@@ -390,7 +390,7 @@ export default function Home() {
               }}
             />
           ) : (
-            <div style={{
+            <div className={styles.card_body} style={{
               color: 'var(--font-color)',
               fontSize: 'calc(10px + 1vmin)'
             }}>

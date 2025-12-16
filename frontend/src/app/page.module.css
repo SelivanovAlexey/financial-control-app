@@ -141,12 +141,41 @@
     display: flex;
     color: var(--font-color);
     margin-bottom: 40px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history_title_filter {
+    width: 150px;
+    height: 100%;
+    display: flex;
+}
+
+.ant-select-item-option-content {
+    font-size: 14px;
 }
 
 .history_list {
     display: grid;
     grid-template-columns: repeat(1, 1fr);
     gap: 10px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.history_list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.history_list::-webkit-scrollbar-track {
+    background: var(--background);
+    border-radius: 3px;
+}
+
+.history_list::-webkit-scrollbar-thumb {
+    background: var(--main-color);
+    border-radius: 3px;
 }
 
 .history_item {
@@ -216,6 +245,10 @@
         max-height: none;
     }
 
+    .history_list {
+    max-height: 70vh;
+}
+
     .card_graph {
     overflow-x: hidden;
     min-height: 70vh;
@@ -247,8 +280,18 @@
     }
 
     .history_title {
-    font-size: 24px;
-}
+    display: flex;
+    justify-content: space-between;
+    }
+
+    .history_title_text {
+        text-align: left;
+        font-size: 20px;
+    }
+
+    .history_title_filter {
+    width: 120px;
+    }
 
     .history_item {
     font-size: calc(12px + 1vmin);

@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { loginUser, logoutUser, signUpUser, getAllExpenses, getAllIncomes, createExpense, createIncome } from "../api/authApi";
+import { loginUser, logoutUser, signUpUser, getAllExpenses, getAllIncomes, createExpense, createIncome, deleteExpense, deleteIncome } from "../api/authApi";
 
 export const userLogin = createAsyncThunk(
   'user/loginUser',
@@ -123,6 +123,34 @@ export const fetchCreateIncome = createAsyncThunk(
   }
 )
 
+export const fetchDeleteExpense = createAsyncThunk(
+  'expense/deleteExpense',
+  async (id) => {
+    const response = await deleteExpense(id);
+    
+    if (response.ok) {
+      const result = await response.json();
+      return result;
+    } else {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to delete expense');
+    }
+  })
+
+export const fetchDeleteIncome = createAsyncThunk(
+  'income/deleteIncome',
+  async (id) => {
+    const response = await deleteIncome(id);
+    
+    if (response.ok) {
+      const result = await response.json();
+      return result;
+    } else {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to delete income');
+    }
+  })
+
 export const checkAuth = createAsyncThunk(
   'user/checkAuth',
   async (_, { rejectWithValue, dispatch }) => {
@@ -198,7 +226,7 @@ const userSlice = createSlice({
         state.userRequest = false;
         state.userError = null;
         state.isAuthChecked = true;
-        state.expenses = []; // очищаем expenses при выходе
+        state.expenses = [];
       })
       .addCase(userLogout.rejected, (state, action) => {
         state.isAuthenticated = false;
@@ -225,14 +253,13 @@ const userSlice = createSlice({
         state.isLoading = false;
       })
       
-      // Добавляем обработку fetchExpenses
       .addCase(fetchExpenses.pending, (state) => {
         state.isLoading = true;
         state.userError = null;
       })
       .addCase(fetchExpenses.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.expenses = action.payload; // сохраняем полученные расходы
+        state.expenses = action.payload;
         state.userError = null;
       })
       .addCase(fetchExpenses.rejected, (state, action) => {
@@ -250,7 +277,7 @@ const userSlice = createSlice({
       })
       .addCase(fetchIncomes.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.incomes = action.payload; // сохраняем полученные доходы
+        state.incomes = action.payload;
         state.userError = null;
       })
       .addCase(fetchIncomes.rejected, (state, action) => {
@@ -267,8 +294,7 @@ const userSlice = createSlice({
         state.isLoading = true;
       })
       .addCase(fetchCreateExpense.fulfilled, (state, action) => {
-        // Используем timestamp из даты формы, а не из ответа сервера
-        const formDate = action.meta.arg.createDate; // ISO строка из формы
+        const formDate = action.meta.arg.createDate;
         const timestampFromForm = Math.floor(new Date(formDate).getTime() / 1000);
         
         const expenseWithCorrectDate = {
@@ -289,8 +315,7 @@ const userSlice = createSlice({
         state.isLoading = true;
       })
       .addCase(fetchCreateIncome.fulfilled, (state, action) => {
-        // Используем timestamp из даты формы, а не из ответа сервера
-        const formDate = action.meta.arg.createDate; // ISO строка из формы
+        const formDate = action.meta.arg.createDate;
         const timestampFromForm = Math.floor(new Date(formDate).getTime() / 1000);
         
         const incomeWithCorrectDate = {
@@ -315,14 +340,40 @@ const userSlice = createSlice({
         state.isAuthChecked = true;
         state.isLoading = false;
         state.userError = null;
-        // Если API возвращает информацию о пользователе:
-        // state.user = action.payload.user;
       })
       .addCase(checkAuth.rejected, (state, action) => {
         state.isAuthenticated = false;
         state.isAuthChecked = true;
         state.isLoading = false;
         state.userError = action.payload?.error || null;
+      })
+
+      .addCase(fetchDeleteExpense.pending, (state) => {
+        state.isLoading = true;
+        state.userError = null;
+      })
+      .addCase(fetchDeleteExpense.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.userError = null;
+        state.expenses = state.expenses.filter((expense) => expense.id !== action.payload);
+      })
+      .addCase(fetchDeleteExpense.rejected, (state, action) => {
+        state.isLoading = false;
+        state.userError = action.error.message || 'Failed to delete expense';
+      })
+
+      .addCase(fetchDeleteIncome.pending, (state) => {
+        state.isLoading = true;
+        state.userError = null;
+      })
+      .addCase(fetchDeleteIncome.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.userError = null;
+        state.incomes = state.incomes.filter((income) => income.id !== action.payload);
+      })
+      .addCase(fetchDeleteIncome.rejected, (state, action) => {
+        state.isLoading = false;
+        state.userError = action.error.message || 'Failed to delete income';
       })
   },
 });

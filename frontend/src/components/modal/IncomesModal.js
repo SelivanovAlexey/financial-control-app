@@ -177,7 +177,7 @@ export default function TransactionsModal({isMobile, closeModal}) {
             </div>
 
             <div className={styles.card_input}>
-              <StyledInput style={{width: "100%", borderRadius: "0"}} label="Комментарий" onChange={handleDescriptionChange}/>
+              <StyledInput style={{width: "100%", borderRadius: "0"}} label="Комментарий" onChange={handleDescriptionChange} inputProps={{ maxLength: 50 }}/>
             </div>
 
             <StyledButton style={{width: "100%"}} disabled={isSubmitting} type="submit">
