@@ -1,11 +1,14 @@
 package app.core.controller;
 
 import app.core.api.ExpenseService;
-import app.core.model.ExpenseEntity;
+import app.core.model.dto.CreateTransactionBaseRequestDto;
+import app.core.model.dto.TransactionBaseResponseDto;
+import app.core.model.dto.UpdateTransactionBaseRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,13 +28,13 @@ public class ExpenseController {
     private final ExpenseService expenseService;
     @GetMapping("/{id}")
     @Operation(summary = "Получить информацию о расходе по id дохода")
-    public ExpenseEntity get(@PathVariable Long id) {
+    public TransactionBaseResponseDto get(@PathVariable Long id) {
         return expenseService.get(id);
     }
 
     @PostMapping
     @Operation(summary = "Добавить расход для пользователя")
-    public ExpenseEntity create(@RequestBody ExpenseEntity expenseEntity) {
+    public TransactionBaseResponseDto create(@Valid @RequestBody CreateTransactionBaseRequestDto expenseEntity) {
         return expenseService.create(expenseEntity);
     }
 
@@ -41,15 +44,15 @@ public class ExpenseController {
         expenseService.delete(id);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @Operation(summary = "Изменить доход по идентификатору дохода")
-    public ExpenseEntity update(@PathVariable Long id, @RequestBody ExpenseEntity updateExpenseEntity) {
+    public TransactionBaseResponseDto update(@PathVariable Long id, @Valid @RequestBody UpdateTransactionBaseRequestDto updateExpenseEntity) {
         return expenseService.update(id, updateExpenseEntity);
     }
 
     @GetMapping
     @Operation(summary = "Получить информацию о доходах пользователя")
-    public List<ExpenseEntity> getAllUserExpense() {
+    public List<TransactionBaseResponseDto> getAllUserExpense() {
         return expenseService.getAllUserExpenses();
     }
 }

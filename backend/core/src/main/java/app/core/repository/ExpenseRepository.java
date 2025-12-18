@@ -16,7 +16,6 @@ import java.util.List;
  */
 @Repository
 public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
-
     @Query("SELECT e FROM ExpenseEntity e WHERE e.user.id = :userId ORDER BY e.createDate DESC")
     List<ExpenseEntity> findAllByUserId(@Param("userId") Long userId);
 }

@@ -1,6 +1,7 @@
 package app.core.service;
 
 import app.core.api.AuthService;
+import app.core.model.dto.AuthRequestDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +25,10 @@ public class AuthServiceImpl implements AuthService {
     private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
     private final RememberMeServices rememberMeServices;
 
-    public void authenticate(String username, String password, boolean rememberMe, HttpServletRequest request, HttpServletResponse response) {
+    public void authenticate(AuthRequestDto authRequest, HttpServletRequest request, HttpServletResponse response) {
         try {
-            UsernamePasswordAuthenticationToken authToken = UsernamePasswordAuthenticationToken.unauthenticated(username, password);
-            log.debug("Authentication attempt for user w/ username={}", username);
+            UsernamePasswordAuthenticationToken authToken = UsernamePasswordAuthenticationToken.unauthenticated(authRequest.username(), authRequest.password());
+            log.debug("Authentication attempt for user w/ username={}", authRequest.username());
             Authentication authentication = authenticationManager.authenticate(authToken);
             if (authentication.isAuthenticated()) {
                 SecurityContext context = securityContextHolderStrategy.createEmptyContext();
@@ -35,15 +36,15 @@ public class AuthServiceImpl implements AuthService {
                 securityContextHolderStrategy.setContext(context);
                 securityContextRepository.saveContext(context, request, response);
 
-                if (rememberMe) {
+                if (authRequest.rememberMe()) {
                     rememberMeServices.loginSuccess(request, response, authentication);
                 }
 
-                log.debug("User w/ username={} successfully authenticated", username);
+                log.debug("User w/ username={} successfully authenticated", authRequest.username());
             }
         } catch (Exception e) {
             rememberMeServices.loginFail(request, response);
-            log.debug("Authentication failed for user w/ username={}", username);
+            log.debug("Authentication failed for user w/ username={}", authRequest.username());
             throw e;
         }
     }

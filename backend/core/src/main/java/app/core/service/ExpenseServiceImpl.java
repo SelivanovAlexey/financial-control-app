@@ -1,82 +1,69 @@
 package app.core.service;
 
+import app.core.utils.SecurityUtils;
 import app.core.api.ExpenseService;
+import app.core.mappers.ExpenseMapper;
 import app.core.model.ExpenseEntity;
-import app.core.model.User;
+import app.core.model.UserEntity;
+import app.core.model.dto.CreateTransactionBaseRequestDto;
+import app.core.model.dto.TransactionBaseResponseDto;
+import app.core.model.dto.UpdateTransactionBaseRequestDto;
 import app.core.repository.ExpenseRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/**
- * Реализация сервис доходов.
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ExpenseServiceImpl implements ExpenseService {
+public class ExpenseServiceImpl extends CommonService implements ExpenseService {
 
     private final ExpenseRepository expenseRepository;
+    private final ExpenseMapper expenseMapper;
+
 
     @Override
-    public ExpenseEntity get(Long id) {
-        ExpenseEntity entity = expenseRepository
+    public TransactionBaseResponseDto get(Long id) {
+        ExpenseEntity expense = expenseRepository
                 .findById(id).orElseThrow(() -> new EntityNotFoundException("Expense with id: " + id + " is not found!"));
-        checkAccess(entity);
-        return entity;
+        SecurityUtils.checkAccess(expense.getUser().getId(), getUserFromSecurityContext().getId());
+        return expenseMapper.toResponse(expense);
     }
 
     @Override
-    public ExpenseEntity create(ExpenseEntity expenseEntity) {
-        expenseEntity.setUser(getUser());
-        return expenseRepository.save(expenseEntity);
+    public TransactionBaseResponseDto create(CreateTransactionBaseRequestDto expenseEntity) {
+        ExpenseEntity expense = expenseMapper.createExpenseFromRequest(expenseEntity);
+        expense.setUser(getUserFromSecurityContext());
+        expenseRepository.save(expense);
+        return expenseMapper.toResponse(expense);
     }
 
     @Override
     public void delete(Long id) {
-        ExpenseEntity entity = expenseRepository
+        ExpenseEntity expense = expenseRepository
                 .findById(id).orElseThrow(() -> new EntityNotFoundException("Expense with id: " + id + " is not found!"));
-        checkAccess(entity);
-        expenseRepository.delete(entity);
+        SecurityUtils.checkAccess(expense.getUser().getId(), getUserFromSecurityContext().getId());
+        expenseRepository.delete(expense);
     }
 
     @Override
-    public ExpenseEntity update(Long id, ExpenseEntity newExpenseEntity) {
-        ExpenseEntity oldExpenseEntity = expenseRepository
-                .findById(id).orElseThrow(() -> new EntityNotFoundException("Expense with id: " + id +  " is not found!"));
-        checkAccess(oldExpenseEntity);
+    public TransactionBaseResponseDto update(Long id, UpdateTransactionBaseRequestDto newExpenseEntity) {
+        ExpenseEntity expense = expenseRepository
+                .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id +  " is not found!"));
+        SecurityUtils.checkAccess(expense.getUser().getId(), getUserFromSecurityContext().getId());
 
-        //TODO: убрать бойлерплейт
-        oldExpenseEntity.setAmount(newExpenseEntity.getAmount());
-        oldExpenseEntity.setCategory(newExpenseEntity.getCategory());
-        oldExpenseEntity.setCreateDate(newExpenseEntity.getCreateDate());
-        oldExpenseEntity.setDescription(newExpenseEntity.getDescription());
+        expenseMapper.updateExpenseFromRequest(newExpenseEntity, expense);
+        expenseRepository.save(expense);
 
-        return expenseRepository.save(oldExpenseEntity);
+        return expenseMapper.toResponse(expense);
     }
 
     @Override
-    public List<ExpenseEntity> getAllUserExpenses() {
-        User user = getUser();
-        return expenseRepository.findAllByUserId(user.getId());
+    public List<TransactionBaseResponseDto> getAllUserExpenses() {
+        UserEntity user = getUserFromSecurityContext();
+        return expenseRepository.findAllByUserId(user.getId()).stream().map(expenseMapper::toResponse).toList();
     }
-
-    private User getUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (User) authentication.getPrincipal();
-    }
-
-    private void checkAccess(ExpenseEntity expenseEntity) {
-        User currentUser = getUser();
-        if (!expenseEntity.getUser().getId().equals(currentUser.getId())) {
-            throw new AccessDeniedException("Access to this record is not allowed for current user");
-        }
-    }
-
 }

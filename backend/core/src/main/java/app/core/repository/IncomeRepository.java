@@ -16,7 +16,6 @@ import java.util.List;
  */
 @Repository
 public interface IncomeRepository extends JpaRepository<IncomeEntity, Long> {
-
     @Query("SELECT i FROM IncomeEntity i WHERE i.user.id = :userId ORDER BY i.createDate DESC")
     List<IncomeEntity> findAllByUserId(@Param("userId") Long userId);
 }

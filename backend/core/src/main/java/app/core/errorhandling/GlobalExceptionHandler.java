@@ -1,5 +1,6 @@
 package app.core.errorhandling;
 
+import app.core.errorhandling.exceptions.MethodNotSupportedException;
 import app.core.errorhandling.exceptions.UserAlreadyExistsException;
 import app.core.errorhandling.model.CommonExceptionJson;
 import app.core.errorhandling.model.ValidationExceptionJson;
@@ -9,14 +10,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.MethodNotAllowedException;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,6 +41,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ValidationExceptionJson.builder().msg("Validation failed").errors(errors).build());
     }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<CommonExceptionJson> httpMessageNotReadableExceptionHandler(HttpMessageNotReadableException e) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "Invalid request", e);
+    }
+
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<CommonExceptionJson> badCredentialsExceptionHandler(BadCredentialsException e) {
@@ -78,9 +88,14 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, "Wrong data", e);
     }
 
+    @ExceptionHandler({HttpRequestMethodNotSupportedException.class, MethodNotSupportedException.class})
+    public ResponseEntity<CommonExceptionJson> httpRequestMethodNotSupportedExceptionHandler(Exception e) {
+        return buildResponse(HttpStatus.METHOD_NOT_ALLOWED, "There is no such http method", e);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<CommonExceptionJson> unhandledExceptionHandler(Exception e) {
-        log.error("An unexpected error occurs: {}.", e.getMessage());
+        log.error("An unexpected error occurs: {}.", e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(CommonExceptionJson.builder().msg("Something went wrong").cause(e.getMessage()).build());
     }

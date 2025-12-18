@@ -2,10 +2,14 @@ package app.core.controller;
 
 import app.core.api.IncomeService;
 import app.core.model.IncomeEntity;
+import app.core.model.dto.CreateTransactionBaseRequestDto;
+import app.core.model.dto.TransactionBaseResponseDto;
+import app.core.model.dto.UpdateTransactionBaseRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,13 +29,13 @@ public class IncomeController {
     private final IncomeService incomeService;
     @GetMapping("/{id}")
     @Operation(summary = "Получить информацию о доходе по id дохода")
-    public IncomeEntity get(@PathVariable Long id) {
+    public TransactionBaseResponseDto get(@PathVariable Long id) {
         return incomeService.get(id);
     }
 
     @PostMapping
     @Operation(summary = "Добавить доход для пользователя")
-    public IncomeEntity create(@RequestBody IncomeEntity incomeEntity) {
+    public TransactionBaseResponseDto create(@Valid @RequestBody CreateTransactionBaseRequestDto incomeEntity) {
         return incomeService.create(incomeEntity);
     }
 
@@ -41,15 +45,15 @@ public class IncomeController {
         incomeService.delete(id);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @Operation(summary = "Изменить доход по идентификатору дохода")
-    public IncomeEntity update(@PathVariable Long id, @RequestBody IncomeEntity updateIncomeEntity) {
+    public TransactionBaseResponseDto update(@PathVariable Long id, @Valid @RequestBody UpdateTransactionBaseRequestDto updateIncomeEntity) {
         return incomeService.update(id, updateIncomeEntity);
     }
 
     @GetMapping
     @Operation(summary = "Получить информацию о доходах пользователя")
-    public List<IncomeEntity> getAllUserIncome() {
+    public List<TransactionBaseResponseDto> getAllUserIncome() {
         return incomeService.getAllUserIncomes();
     }
 }

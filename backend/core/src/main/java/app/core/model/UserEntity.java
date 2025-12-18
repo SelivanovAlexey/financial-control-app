@@ -8,20 +8,19 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@Data
 @Entity
 @Table(name = "users")
-@Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements UserDetails {
+public class UserEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_seq")
     @SequenceGenerator(name = "users_seq", sequenceName = "users_seq", allocationSize = 1)
     private Long id;
-    @Transient //TODO: temporal
-    private String name;
+    @Column(name = "display_name", length = 128)
+    private String displayName;
     @Column(name = "username", length = 128)
     private String username;
     @Column(name = "password_hash", length = 128)

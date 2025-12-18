@@ -1,53 +1,21 @@
 package app.core.api;
 
-import app.core.model.ExpenseEntity;
+import app.core.model.dto.CreateTransactionBaseRequestDto;
+import app.core.model.dto.TransactionBaseResponseDto;
+import app.core.model.dto.UpdateTransactionBaseRequestDto;
 
 import java.util.List;
 
-/**
- * Сервис расходов.
- */
 public interface ExpenseService {
 
-    /**
-     * Получить расход по id.
-     *
-     * @param id идентификатор расход.
-     * @return сущность расход
-     */
-    ExpenseEntity get(Long id);
+    TransactionBaseResponseDto get(Long id);
 
+    TransactionBaseResponseDto create(CreateTransactionBaseRequestDto expenseEntity);
 
-    /**
-     * Добавить расход.
-     *
-     * @param expenseEntity сущность расхода
-     * @return расход
-     */
-    ExpenseEntity create(ExpenseEntity expenseEntity);
-
-    /**
-     * Удалить расход по идентификатору.
-     *
-     * @param id идентификатор расхода
-     * @return удаленное расхода
-     */
     void delete(Long id);
 
-    /**
-     * Обновить расход по идентификатору.
-     *
-     * @param id идентификатор расхода
-     * @param expenseEntity расход
-     * @return обновленное расхода
-     */
-    ExpenseEntity update(Long id, ExpenseEntity expenseEntity);
+    TransactionBaseResponseDto update(Long id, UpdateTransactionBaseRequestDto expenseEntity);
 
-    /**
-     * Получить все расходы юзера.
-     *
-     * @return список расходов юзера
-     */
-    List<ExpenseEntity> getAllUserExpenses();
+    List<TransactionBaseResponseDto> getAllUserExpenses();
 
 }

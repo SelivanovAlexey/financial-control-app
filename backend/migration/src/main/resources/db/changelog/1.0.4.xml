@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="add column 'display_name' into 'users'" author="alexey selivanov">
+        <comment>Добавление поля display_name в таблицу users</comment>
+
+        <sqlFile path="1.0.4/add_column_displayname_users.sql" relativeToChangelogFile="true"/>
+
+        <rollback>
+            <sqlFile path="1.0.4/rollback/add_column_displayname_users_rollback.sql" relativeToChangelogFile="true"/>
+        </rollback>
+
+    </changeSet>
+</databaseChangeLog>
