@@ -175,7 +175,7 @@ export default function History() {
   if (isLoading) {
     return (
       <div className={styles.table_container}>
-        <div className={styles.table_header}>История операций</div>
+        <div className={styles.history_title}>История операций</div>
         <div style={{ color: "var(--font-color)", textAlign: "center", padding: "2rem" }}>
           Загрузка...
         </div>
@@ -186,7 +186,7 @@ export default function History() {
   if (userError) {
     return (
       <div className={styles.table_container}>
-        <div className={styles.table_header}>История операций</div>
+        <div className={styles.history_title}>История операций</div>
         <div style={{ color: "var(--red-color)", textAlign: "center", padding: "2rem" }}>
           Ошибка: {userError}
         </div>

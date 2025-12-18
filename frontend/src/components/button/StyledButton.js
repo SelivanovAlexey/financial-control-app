@@ -11,7 +11,13 @@ const ColorButton = styled(Button)(() => ({
   '&:hover': {
     backgroundColor: "var(--accent-color)", // Фон становится темно-зеленым при наведении
     color: '#ffffff', // Текст становится белым при наведении
+    pointer: 'cursor',
   },
+  '&:disabled': {
+    backgroundColor: "var(--foreground)",
+    color: 'var(--main-color)',
+    border: `none`,
+  }
 }));
 
 export default function StyledButton(props) {
