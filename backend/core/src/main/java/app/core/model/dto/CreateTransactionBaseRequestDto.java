@@ -5,10 +5,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
 import java.time.OffsetDateTime;
 
 //TODO: разделить когда появлятся отличия в income и expense entities
+@Builder
 public record CreateTransactionBaseRequestDto(
         @NotNull @Positive Long amount,
         @NotNull String category,

@@ -1,0 +1,11 @@
+spring:
+  profiles:
+    active: e2e
+  datasource:
+    url: jdbc:tc:postgresql:15:///testdb
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+#TODO: e2e tests

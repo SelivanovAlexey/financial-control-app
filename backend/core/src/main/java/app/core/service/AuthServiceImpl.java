@@ -11,7 +11,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,7 @@ import org.springframework.stereotype.Service;
 public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final SecurityContextRepository securityContextRepository;
-    private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
+
     private final RememberMeServices rememberMeServices;
 
     public void authenticate(AuthRequestDto authRequest, HttpServletRequest request, HttpServletResponse response) {
@@ -31,9 +30,9 @@ public class AuthServiceImpl implements AuthService {
             log.debug("Authentication attempt for user w/ username={}", authRequest.username());
             Authentication authentication = authenticationManager.authenticate(authToken);
             if (authentication.isAuthenticated()) {
-                SecurityContext context = securityContextHolderStrategy.createEmptyContext();
+                SecurityContext context = SecurityContextHolder.createEmptyContext();
                 context.setAuthentication(authentication);
-                securityContextHolderStrategy.setContext(context);
+                SecurityContextHolder.setContext(context);
                 securityContextRepository.saveContext(context, request, response);
 
                 if (authRequest.rememberMe()) {

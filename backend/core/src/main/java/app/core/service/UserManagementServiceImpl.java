@@ -1,6 +1,6 @@
 package app.core.service;
 
-import app.core.utils.SecurityUtils;
+import app.core.security.SecurityProvider;
 import app.core.api.UserManagementService;
 import app.core.errorhandling.exceptions.UserAlreadyExistsException;
 import app.core.mappers.UserMapper;
@@ -23,10 +23,11 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserManagementServiceImpl extends CommonService implements UserManagementService {
+public class UserManagementServiceImpl implements UserManagementService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final SecurityProvider securityProvider;
 
 
     @Override
@@ -38,28 +39,28 @@ public class UserManagementServiceImpl extends CommonService implements UserMana
         }
 
         UserEntity userEntity = userMapper.createUserFromRequest(newUser, passwordEncoder);
-        userRepository.save(userEntity);
+        UserEntity savedUser = userRepository.save(userEntity);
 
         log.debug("User {} successfully created", newUser.username());
-        return userMapper.toResponse(userEntity);
+        return userMapper.toResponse(savedUser);
     }
 
     @Override
     @Transactional
     public void deleteCurrentUser() {
-        deleteUser(getUserFromSecurityContext().getId());
+        deleteUser(securityProvider.getUserFromSecurityContext().getId());
     }
 
     @Override
     @Transactional
     public UserResponseDto updateCurrentUser(UpdateUserRequestDto userToUpdate) throws UsernameNotFoundException {
-        return updateUser(getUserFromSecurityContext().getId(), userToUpdate);
+        return updateUser(securityProvider.getUserFromSecurityContext().getId(), userToUpdate);
     }
 
     @Override
     @Transactional
     public UserResponseDto getCurrentUser() {
-        return getUser(getUserFromSecurityContext().getId());
+        return getUser(securityProvider.getUserFromSecurityContext().getId());
     }
 
     @Override
@@ -67,7 +68,7 @@ public class UserManagementServiceImpl extends CommonService implements UserMana
     public UserResponseDto getUser(Long userId) {
         UserEntity user = userRepository
                 .findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id: " + userId + " is not found!"));
-        SecurityUtils.checkAccess(userId, getUserFromSecurityContext().getId());
+        securityProvider.checkAccess(userId, securityProvider.getUserFromSecurityContext().getId());
         return userMapper.toResponse(user);
     }
 
@@ -76,17 +77,18 @@ public class UserManagementServiceImpl extends CommonService implements UserMana
     public UserResponseDto updateUser(Long userId, UpdateUserRequestDto userToUpdate) throws UsernameNotFoundException {
         UserEntity userEntity = userRepository
                 .findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id: " + userId + " is not found!"));
-        SecurityUtils.checkAccess(userId, getUserFromSecurityContext().getId());
+        securityProvider.checkAccess(userId, securityProvider.getUserFromSecurityContext().getId());
 
         userMapper.updateUserFromRequest(userToUpdate, userEntity, passwordEncoder);
+        UserEntity savedUser = userRepository.save(userEntity);
 
         if (userToUpdate.password() != null) {
-            updateAuthenticationInSecurityContext(userEntity);
+            securityProvider.updateAuthenticationInSecurityContext(userEntity);
             log.debug("Password changed for user {}", userEntity.getUsername());
         }
 
         log.debug("User {} successfully updated", userEntity.getId());
-        return userMapper.toResponse(userEntity);
+        return userMapper.toResponse(savedUser);
     }
 
     @Override
@@ -94,7 +96,7 @@ public class UserManagementServiceImpl extends CommonService implements UserMana
     public void deleteUser(Long userId) {
         UserEntity user = userRepository
                 .findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id: " + userId + " is not found!"));
-        SecurityUtils.checkAccess(userId, getUserFromSecurityContext().getId());
+        securityProvider.checkAccess(userId, securityProvider.getUserFromSecurityContext().getId());
 
         userRepository.deleteById(userId);
         SecurityContextHolder.clearContext();

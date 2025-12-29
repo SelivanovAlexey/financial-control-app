@@ -1,6 +1,6 @@
 package app.core.service;
 
-import app.core.utils.SecurityUtils;
+import app.core.security.SecurityProvider;
 import app.core.api.ExpenseService;
 import app.core.mappers.ExpenseMapper;
 import app.core.model.ExpenseEntity;
@@ -19,33 +19,33 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ExpenseServiceImpl extends CommonService implements ExpenseService {
+public class ExpenseServiceImpl implements ExpenseService {
 
     private final ExpenseRepository expenseRepository;
     private final ExpenseMapper expenseMapper;
-
+    private final SecurityProvider securityProvider;
 
     @Override
     public TransactionBaseResponseDto get(Long id) {
         ExpenseEntity expense = expenseRepository
                 .findById(id).orElseThrow(() -> new EntityNotFoundException("Expense with id: " + id + " is not found!"));
-        SecurityUtils.checkAccess(expense.getUser().getId(), getUserFromSecurityContext().getId());
+        securityProvider.checkAccess(expense.getUser().getId(), securityProvider.getUserFromSecurityContext().getId());
         return expenseMapper.toResponse(expense);
     }
 
     @Override
     public TransactionBaseResponseDto create(CreateTransactionBaseRequestDto expenseEntity) {
         ExpenseEntity expense = expenseMapper.createExpenseFromRequest(expenseEntity);
-        expense.setUser(getUserFromSecurityContext());
-        expenseRepository.save(expense);
-        return expenseMapper.toResponse(expense);
+        expense.setUser(securityProvider.getUserFromSecurityContext());
+        ExpenseEntity savedExpense = expenseRepository.save(expense);
+        return expenseMapper.toResponse(savedExpense);
     }
 
     @Override
     public void delete(Long id) {
         ExpenseEntity expense = expenseRepository
                 .findById(id).orElseThrow(() -> new EntityNotFoundException("Expense with id: " + id + " is not found!"));
-        SecurityUtils.checkAccess(expense.getUser().getId(), getUserFromSecurityContext().getId());
+        securityProvider.checkAccess(expense.getUser().getId(), securityProvider.getUserFromSecurityContext().getId());
         expenseRepository.delete(expense);
     }
 
@@ -53,17 +53,16 @@ public class ExpenseServiceImpl extends CommonService implements ExpenseService 
     public TransactionBaseResponseDto update(Long id, UpdateTransactionBaseRequestDto newExpenseEntity) {
         ExpenseEntity expense = expenseRepository
                 .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id +  " is not found!"));
-        SecurityUtils.checkAccess(expense.getUser().getId(), getUserFromSecurityContext().getId());
+        securityProvider.checkAccess(expense.getUser().getId(), securityProvider.getUserFromSecurityContext().getId());
 
         expenseMapper.updateExpenseFromRequest(newExpenseEntity, expense);
-        expenseRepository.save(expense);
-
-        return expenseMapper.toResponse(expense);
+        ExpenseEntity updatedExpense = expenseRepository.save(expense);
+        return expenseMapper.toResponse(updatedExpense);
     }
 
     @Override
     public List<TransactionBaseResponseDto> getAllUserExpenses() {
-        UserEntity user = getUserFromSecurityContext();
+        UserEntity user = securityProvider.getUserFromSecurityContext();
         return expenseRepository.findAllByUserId(user.getId()).stream().map(expenseMapper::toResponse).toList();
     }
 }

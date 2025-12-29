@@ -109,7 +109,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
-        return (request, response, exception) -> handlerExceptionResolver.resolveException(request, response, null, exception);
+        return (request, response, exception) ->
+                handlerExceptionResolver.resolveException(request, response, null, exception);
     }
 
     @Bean

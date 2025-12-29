@@ -1,14 +1,16 @@
 package app.core.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.OffsetDateTime;
 
 @Getter
 @Setter
 @MappedSuperclass
+@SuperBuilder(toBuilder = true)
+@NoArgsConstructor
 public abstract class TransactionBaseEntity {
 
     @Id

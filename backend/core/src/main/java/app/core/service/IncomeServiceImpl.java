@@ -1,6 +1,6 @@
 package app.core.service;
 
-import app.core.utils.SecurityUtils;
+import app.core.security.SecurityProvider;
 import app.core.api.IncomeService;
 import app.core.mappers.IncomeMapper;
 import app.core.model.IncomeEntity;
@@ -19,32 +19,33 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class IncomeServiceImpl extends CommonService implements IncomeService {
+public class IncomeServiceImpl implements IncomeService {
 
     private final IncomeRepository incomeRepository;
     private final IncomeMapper incomeMapper;
+    private final SecurityProvider securityProvider;
 
     @Override
     public TransactionBaseResponseDto get(Long id) {
         IncomeEntity income = incomeRepository
                 .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id + " is not found!"));
-        SecurityUtils.checkAccess(income.getUser().getId(), getUserFromSecurityContext().getId());
+        securityProvider.checkAccess(income.getUser().getId(), securityProvider.getUserFromSecurityContext().getId());
         return incomeMapper.toResponse(income);
     }
 
     @Override
     public TransactionBaseResponseDto create(CreateTransactionBaseRequestDto incomeRequest) {
         IncomeEntity income = incomeMapper.createIncomeFromRequest(incomeRequest);
-        income.setUser(getUserFromSecurityContext());
-        incomeRepository.save(income);
-        return incomeMapper.toResponse(income);
+        income.setUser(securityProvider.getUserFromSecurityContext());
+        IncomeEntity savedIncome = incomeRepository.save(income);
+        return incomeMapper.toResponse(savedIncome);
     }
 
     @Override
     public void delete(Long id) {
         IncomeEntity income = incomeRepository
                 .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id +  " is not found!"));
-        SecurityUtils.checkAccess(income.getUser().getId(), getUserFromSecurityContext().getId());
+        securityProvider.checkAccess(income.getUser().getId(), securityProvider.getUserFromSecurityContext().getId());
         incomeRepository.delete(income);
     }
 
@@ -52,16 +53,16 @@ public class IncomeServiceImpl extends CommonService implements IncomeService {
     public TransactionBaseResponseDto update(Long id, UpdateTransactionBaseRequestDto incomeRequest) {
         IncomeEntity income = incomeRepository
                 .findById(id).orElseThrow(() -> new EntityNotFoundException("Income with id: " + id +  " is not found!"));
-        SecurityUtils.checkAccess(income.getUser().getId(), getUserFromSecurityContext().getId());
+        securityProvider.checkAccess(income.getUser().getId(), securityProvider.getUserFromSecurityContext().getId());
         incomeMapper.updateIncomeFromRequest(incomeRequest, income);
-        incomeRepository.save(income);
+        IncomeEntity updatedIncome = incomeRepository.save(income);
 
-        return incomeMapper.toResponse(income);
+        return incomeMapper.toResponse(updatedIncome);
     }
 
     @Override
     public List<TransactionBaseResponseDto> getAllUserIncomes() {
-        UserEntity user = getUserFromSecurityContext();
+        UserEntity user = securityProvider.getUserFromSecurityContext();
         return incomeRepository.findAllByUserId(user.getId()).stream().map(incomeMapper::toResponse).toList();
     }
 }
