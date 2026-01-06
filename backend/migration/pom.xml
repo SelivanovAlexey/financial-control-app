@@ -49,19 +49,19 @@
 
     <profiles>
         <profile>
-            <id>local</id>
+            <id>dev</id>
             <activation>
                 <property>
                     <name>env</name>
-                    <value>local</value>
+                    <value>dev</value>
                 </property>
             </activation>
 
             <properties>
                 <profile.changelogSchemaName>public</profile.changelogSchemaName>
-                <profile.propertyFile>src/main/resources/db/local/liquibase.properties</profile.propertyFile>
+                <profile.propertyFile>src/main/resources/db/dev/liquibase.properties</profile.propertyFile>
                 <profile.changeLogFile>src/main/resources/db/master.xml</profile.changeLogFile>
-                <profile.dataDir>src/main/resources/db/local/data</profile.dataDir>
+                <profile.dataDir>src/main/resources/db/dev/data</profile.dataDir>
                 <profile.verbose>false</profile.verbose>
                 <profile.logging>debug</profile.logging>
             </properties>

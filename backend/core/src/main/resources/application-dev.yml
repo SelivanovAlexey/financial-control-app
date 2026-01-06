@@ -1,27 +1,25 @@
 authentication:
   enabled: true
   remember-me:
-    key: P+TvGNKSGB909e+MFm4hid583N+d+ndbnwew/dNMvyo=
+    key: ${REMEMBER_ME_KEY}
     expiration: 604 800 # 7 days
   hide-usernotfound-exceptions: false
 
 server:
   port: 8484
 frontend:
-  url: &frontUrl http://localhost:3000
+  url: &frontUrl ${FRONTEND_URL}
 spring:
-  profiles:
-    active: local
   application:
     name: financial-control
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/financial
-    username: postgres
-    password: 1234
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
 cors:
   allowed-origins: *frontUrl
 logging:
   level:
-    app.core: debug
-    org.springframework.security.web.authentication.rememberme: debug
+    app.core: ${LOG_LEVEL}
+    org.springframework.security.web.authentication.rememberme: ${LOG_LEVEL}

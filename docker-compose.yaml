@@ -7,12 +7,16 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      args:
-        BUILD_ENV: local # local, ci, prod
     ports:
-      - 8484:8484
+      - ${SERVER_PORT:-8484}:8484
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/financial
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      REMEMBER_ME_KEY: ${REMEMBER_ME_KEY}
+      LOG_LEVEL: ${LOG_LEVEL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      SPRING_PROFILES_ACTIVE: ${ENV}
     depends_on:
       - postgres
   frontend:
@@ -20,23 +24,17 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        BUILD_ENV: local # local, ci, prod
+      target: production
     ports:
-      - 3000:3000
-    environment:
-      NODE_ENV: ${NODE_ENV:-development}
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ${FRONTEND_PORT:-3000}:3000
   postgres:
     image: postgres:14.7
     container_name: postgres-db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: financial
     ports:
-      - 5432:5432
+      - ${DATABASE_PORT:-5432}:5432
     volumes:
       - data:/var/lib/postgresql/data

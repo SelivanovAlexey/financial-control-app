@@ -1,9 +1,8 @@
 authentication:
   enabled: true
   remember-me:
-    key: b/tL7tdd6tY6KLGW5ReocJLuZT+ARzJAvP2EuhNm8ro=
+    key: ${REMEMBER_ME_KEY}
     expiration: 604 800 # 7 days
-
 
 server:
   port: 8484
@@ -12,9 +11,9 @@ spring:
     name: financial-control
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://ep-quiet-paper-a2x9rzsf-pooler.eu-central-1.aws.neon.tech/financial
-    username: neondb_owner
-    password: npg_vJmqn82jtNDw
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
 logging:
   level:
-    app.core: info
+    app.core: ${LOG_LEVEL}

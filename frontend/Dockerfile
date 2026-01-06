@@ -1,32 +1,41 @@
-FROM node:18-alpine
+FROM node:20-alpine AS base
 
-# Аргумент для определения среды
-ARG BUILD_ENV
-ENV BUILD_ENV=${BUILD_ENV}
-
+FROM base AS deps
 WORKDIR /app
+RUN apk add --no-cache libc6-compat
 
-# Устанавливаем зависимости
-COPY package*.json ./
+COPY package.json package-lock.json* ./
 RUN npm ci
 
-# Копируем исходный код
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN npm run build
 
-# Логика для разных сред
-RUN if [ "$BUILD_ENV" = "local" ]; then \
-      echo "Local environment - skipping build"; \
-    else \
-      echo "CI/Prod environment - building app"; \
-      npm run build; \
-    fi
-
-# Открываем порт
+FROM base AS dev
+WORKDIR /app
+ENV NODE_ENV=development
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 EXPOSE 3000
+CMD npm run dev
 
-# Запуск в зависимости от среды
-CMD if [ "$BUILD_ENV" = "local" ]; then \
-      npm run dev; \
-    else \
-      npm start; \
-    fi
+FROM base AS production
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000
+
+ENV HOSTNAME="0.0.0.0"
+CMD ["node", "server.js"]
