@@ -7,8 +7,6 @@ authentication:
 
 server:
   port: 8484
-frontend:
-  url: &frontUrl ${FRONTEND_URL}
 spring:
   application:
     name: financial-control
@@ -18,7 +16,7 @@ spring:
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
 cors:
-  allowed-origins: *frontUrl
+  allowed-origins: ${FRONTEND_URL}
 logging:
   level:
     app.core: ${LOG_LEVEL}
