@@ -38,3 +38,6 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+springdoc:
+  api-docs:
+    enabled: ${API_DOCS_ENABLED}
