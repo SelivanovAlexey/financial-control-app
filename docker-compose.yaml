@@ -17,6 +17,7 @@ services:
       REMEMBER_ME_KEY: ${REMEMBER_ME_KEY?}
       LOG_LEVEL: ${LOG_LEVEL?}
       FRONTEND_URL: ${FRONTEND_URL?}
+      ACTUATOR_ENDPOINTS: ${ACTUATOR_ENDPOINTS?}
     depends_on:
       - postgres
   frontend:

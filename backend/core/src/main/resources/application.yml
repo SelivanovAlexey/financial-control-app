@@ -29,3 +29,12 @@ cors:
 logging:
   level:
     app.core: ${LOG_LEVEL}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ${ACTUATOR_ENDPOINTS}
+      base-path: /internal
+  endpoint:
+    health:
+      show-details: when_authorized

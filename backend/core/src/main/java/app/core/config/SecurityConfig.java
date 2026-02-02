@@ -51,6 +51,7 @@ public class SecurityConfig {
                 .requestCache(RequestCacheConfigurer::disable)
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/internal/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .rememberMe(remember -> remember
