@@ -23,6 +23,7 @@
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <rest-assured.version>6.0.0</rest-assured.version>
         <testcontainers.version>1.21.4</testcontainers.version>
+        <preliquibase.version>1.6.1</preliquibase.version>
     </properties>
 
     <dependencyManagement>
@@ -70,6 +71,12 @@
                 <artifactId>postgresql</artifactId>
                 <version>${testcontainers.version}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>net.lbruun.springboot</groupId>
+                <artifactId>preliquibase-spring-boot-starter</artifactId>
+                <version>${preliquibase.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

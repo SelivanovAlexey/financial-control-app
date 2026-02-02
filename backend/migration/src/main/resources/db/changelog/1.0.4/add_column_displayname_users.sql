@@ -1,4 +1,4 @@
-ALTER TABLE public.users
+ALTER TABLE users
     ADD COLUMN display_name TEXT;
 
-COMMENT ON COLUMN public.users.display_name IS 'Отображаемое имя';
+COMMENT ON COLUMN users.display_name IS 'Отображаемое имя';

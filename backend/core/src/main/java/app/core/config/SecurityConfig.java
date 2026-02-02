@@ -3,7 +3,6 @@ package app.core.config;
 import app.core.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,7 +42,6 @@ public class SecurityConfig {
     private Integer rememberMeExp;
 
     @Bean
-    @ConditionalOnProperty(name = "authentication.enabled", havingValue = "true")
     public SecurityFilterChain sessionBasedAuthFilterChain(HttpSecurity http) throws Exception {
         return http
                 .cors(Customizer.withDefaults())
@@ -67,16 +65,6 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(authenticationEntryPoint())
                 )
-                .build();
-    }
-
-    @Bean
-    @ConditionalOnProperty(name = "authentication.enabled", havingValue = "false")
-    public SecurityFilterChain noAuthFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                 .build();
     }
 

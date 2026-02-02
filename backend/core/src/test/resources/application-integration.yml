@@ -1,15 +1,13 @@
 spring:
-  profiles:
-    active: integration
   datasource:
-    url: jdbc:tc:postgresql:15:///testdb
+    url: jdbc:tc:postgresql:18:///test_int_db
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: false
-  sql:
-    init:
-      mode: always
-      data-locations: classpath:data/test-users.sql
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/master.xml
+    default-schema: test_int_schema
+    liquibase-schema: liquibase
+logging:
+  level:
+    app.core: debug
 #TODO: integration tests

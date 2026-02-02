@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "expenses", schema = "public")
+@Table(name = "expenses")
 @SequenceGenerator(name = "transaction_seq", sequenceName = "expenses_seq", allocationSize = 1)
 @SuperBuilder(toBuilder = true)
 @NoArgsConstructor

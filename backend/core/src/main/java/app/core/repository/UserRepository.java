@@ -16,7 +16,6 @@ import java.util.Optional;
  */
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
-    //TODO: убрать лимит (добавить констрейнт и уникальность)
-    @Query("SELECT i FROM UserEntity i WHERE i.username = :username ORDER BY i.id ASC LIMIT 1")
+    @Query("SELECT i FROM UserEntity i WHERE i.username = :username")
     Optional<UserEntity> findByUsername(@Param("username") String username);
 }

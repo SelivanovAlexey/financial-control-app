@@ -1,9 +1,7 @@
 authentication:
-  enabled: true
   remember-me:
     key: ${REMEMBER_ME_KEY}
     expiration: 604 800 # 7 days
-  hide-usernotfound-exceptions: false
 
 server:
   port: 8484
@@ -15,9 +13,18 @@ spring:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        ddl-auto: none
+      show-sql: true
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/master.xml
+    default-schema: ${DATABASE_SCHEMA}
+    liquibase-schema: liquibase
 cors:
   allowed-origins: ${FRONTEND_URL}
 logging:
   level:
     app.core: ${LOG_LEVEL}
-    org.springframework.security.web.authentication.rememberme: ${LOG_LEVEL}

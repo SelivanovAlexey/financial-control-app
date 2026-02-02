@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.OffsetDateTime;
 
@@ -18,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("IncomeMapper Unit Tests")
+@ActiveProfiles("unit")
 class IncomeMapperUnitTest {
 
     private IncomeMapper incomeMapper;

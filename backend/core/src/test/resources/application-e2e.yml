@@ -1,11 +1,13 @@
 spring:
-  profiles:
-    active: e2e
   datasource:
-    url: jdbc:tc:postgresql:15:///testdb
+    url: jdbc:tc:postgresql:18:///test_e2e_db
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: false
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/master.xml
+    default-schema: test_e2e_schema
+    liquibase-schema: liquibase
+logging:
+  level:
+    app.core: debug
 #TODO: e2e tests

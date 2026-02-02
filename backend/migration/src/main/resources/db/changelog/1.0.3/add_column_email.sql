@@ -1,4 +1,4 @@
-ALTER TABLE public.users
+ALTER TABLE users
     ADD COLUMN email TEXT;
 
-COMMENT ON COLUMN public.users.email IS 'Электронная почта';
+COMMENT ON COLUMN users.email IS 'Электронная почта';

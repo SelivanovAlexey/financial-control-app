@@ -14,9 +14,12 @@ FROM builder-base AS builder
 WORKDIR /app
 
 COPY --from=deps /root/.m2 /root/.m2
-COPY . .
+COPY pom.xml ./
+COPY dependency-bom/ ./dependency-bom/
+COPY ./core/ ./core
+COPY ./migration/ ./migration
 
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
 FROM runtime-base AS runner
 WORKDIR /app
