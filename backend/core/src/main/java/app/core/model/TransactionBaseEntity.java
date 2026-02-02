@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Getter
@@ -18,7 +19,7 @@ public abstract class TransactionBaseEntity {
     protected Long id;
 
     @Column(name = "amount", nullable = false)
-    protected Long amount;
+    protected BigDecimal amount;
 
     @Column(name = "category", length = 128, nullable = false)
     protected String category;

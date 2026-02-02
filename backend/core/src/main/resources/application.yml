@@ -17,6 +17,7 @@ spring:
     properties:
       hibernate:
         ddl-auto: none
+        default_schema: ${DATABASE_SCHEMA}
       show-sql: true
   liquibase:
     enabled: true

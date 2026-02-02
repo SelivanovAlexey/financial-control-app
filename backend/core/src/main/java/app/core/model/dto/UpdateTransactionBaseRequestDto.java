@@ -6,12 +6,13 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 //TODO: разделить когда появлятся отличия в income и expense entities
 @Builder
 public record UpdateTransactionBaseRequestDto(
-        @Positive Long amount,
+        @Positive BigDecimal amount,
         String category,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
         @PastOrPresent OffsetDateTime createDate,

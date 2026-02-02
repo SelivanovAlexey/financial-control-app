@@ -3,7 +3,7 @@ create sequence if not exists incomes_seq;
 create table incomes
 (
     id          bigint not null default nextval('incomes_seq'),
-    amount      bigint,
+    amount      numeric(19,2),
     category    varchar(128),
     create_date timestamp with time zone default now() not null,
     constraint income_pk primary key (id)

@@ -1,7 +1,6 @@
 package app.core.mappers;
 
 import app.core.model.ExpenseEntity;
-import app.core.model.IncomeEntity;
 import app.core.model.dto.CreateTransactionBaseRequestDto;
 import app.core.model.dto.TransactionBaseResponseDto;
 import app.core.model.dto.UpdateTransactionBaseRequestDto;
