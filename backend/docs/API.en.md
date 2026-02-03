@@ -8,6 +8,30 @@ REST API for Financial Control App
 Version: 1.0
 Updated: 03.02.2026
 
+## 📋 Table of Contents
+
+- [General Information](#-general-information)
+- [Authentication](#-authentication-session-based)
+  - [Login](#-login)
+  - [Logout](#-logout)
+  - [Registration](#-registration)
+- [CRUD: Expenses](#-crud-expenses)
+  - [Create Expense](#-create-expense)
+  - [Get All Expenses](#-get-all-expenses)
+  - [Get Expense by ID](#-get-expense-by-id)
+  - [Update Expense](#-update-expense)
+  - [Delete Expense](#-delete-expense)
+- [CRUD: Incomes](#-crud-incomes)
+  - [Create Income](#-create-income)
+  - [Get All Incomes](#-get-all-incomes)
+  - [Get Income by ID](#-get-income-by-id)
+  - [Update Income by ID](#-update-income-by-id)
+  - [Delete Income by ID](#-delete-income-by-id)
+- [Profile Management](#-profile-management)
+  - [Get User Information](#-get-user-information)
+  - [Update User Information](#-update-user-information)
+- [Error Handling](#-error-handling)
+- [Usage Scenarios](#-usage-scenarios)
 
 ---
 
