@@ -1,3 +1,5 @@
+🌐 **Язык | Language:** 🇷🇺 | [🇬🇧](README.en.md)
+
 # 💰 Financial Control App
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -6,40 +8,41 @@
 [![Next.js](https://img.shields.io/badge/Next.js-15.3.2-black)](https://nextjs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-blue)](https://www.postgresql.org/)
 
-Personal finance management web application.
+Веб-приложение для управления личными финансами.
 
-## 📋 Table of Contents
+## 📋 Содержание
 
-- [Overview](#-overview)
-- [Architecture](#-architecture)
-- [Built with](#-built-with)
-- [Quick Start](#-quick-start)
-- [Development Setup](#-development-setup)
-- [License](#-license)
+- [Обзор](#-обзор)
+- [Архитектура](#-архитектура)
+- [Технологии](#-технологии)
+- [Быстрый старт](#-быстрый-старт)
+- [Настройка для разработки](#-настройка-для-разработки)
+- [Документация](#-документация)
+- [Лицензия](#-лицензия)
 
-## 📋 Overview
+## 📋 Обзор
 
-Financial Control App is a comprehensive personal finance management system that helps users track their expenses, manage budgets, and gain insights into their spending habits.
+Financial Control App — это комплексная система управления личными финансами, которая помогает пользователям отслеживать расходы, управлять бюджетом и анализировать свои траты.
 
-The application provides a modern web interface for:
-- Recording daily expenses and income
-- Categorizing transactions
-- Viewing financial reports and analytics
-- Managing user accounts securely
+Приложение предоставляет современный веб-интерфейс для:
+- Учёта ежедневных расходов и доходов
+- Категоризации транзакций
+- Просмотра финансовых отчётов и аналитики
+- Безопасного управления аккаунтами
 
-Built with modern technologies, it ensures reliable performance, security, and scalability.
+Построено на современных технологиях для обеспечения надёжной производительности, безопасности и масштабируемости.
 
-## 🏗️ Architecture
+## 🏗️ Архитектура
 
-The application consists of three main components:
+Приложение состоит из трёх основных компонентов:
 
-- **Frontend**: Next.js web application that users interact with
-- **Backend**: Spring Boot REST API that handles business logic
-- **Database**: PostgreSQL database for data storage
+- **Frontend**: Веб-приложение на Next.js, с которым взаимодействуют пользователи
+- **Backend**: REST API на Spring Boot, обрабатывающий бизнес-логику
+- **Database**: База данных PostgreSQL для хранения данных
 
-User requests flow from Frontend → Backend → Database, with responses returning in reverse order.
+Запросы пользователей проходят по цепочке Frontend → Backend → Database, а ответы возвращаются в обратном порядке.
 
-## 🛠️ Built with
+## 🛠️ Технологии
 
 **Backend:**
 - Java 21, Spring Boot 3.4.7
@@ -50,85 +53,89 @@ User requests flow from Frontend → Backend → Database, with responses return
 - Next.js 15.3.2, React 19
 - Redux Toolkit, Material-UI
 
-**Tools:**
+**Инструменты:**
 - Docker, Docker Compose
 - Maven, NPM
 
-## 🚀 Quick Start
+## 🚀 Быстрый старт
 
-### Prerequisites
+### Требования
 - Docker & Docker Compose
 - Git
 
-### Installation & Setup
+### Установка и настройка
 
-1. **Clone the repository**
+1. **Клонирование репозитория**
    ```bash
    git clone <repository-url>
    cd financial-control-app
    ```
 
-2. **Configure environment variables**
-    - Copy the example environment file: `cp .env.example .env`
-    - Edit `.env` file with your database credentials:
+2. **Настройка переменных окружения**
+    - Скопируйте пример конфигурации: `cp .env.example .env`
+    - Отредактируйте файл `.env` с вашими данными:
    ```env
-   # Database Configuration
+   # Конфигурация базы данных
    DATABASE_URL=jdbc:postgresql://postgres:5432/financial
    DATABASE_USERNAME=your_db_username
    DATABASE_PASSWORD=your_db_password
    DATABASE_SCHEMA=public
    DATABASE_PORT=5432
 
-   # Backend Configuration
+   # Конфигурация бэкенда
    SERVER_PORT=8484
    REMEMBER_ME_KEY=your-256-bit-secret-key-here
    LOG_LEVEL=INFO
    FRONTEND_URL=http://localhost:3000
    ACTUATOR_ENDPOINTS=health,info,metrics
 
-   # Frontend Configuration
+   # Конфигурация фронтенда
    FRONTEND_PORT=3000
    ```
 
-3. **Start the application**
+3. **Запуск приложения**
    ```bash
    docker-compose up --build
    ```
 
-4. **Access the application**
-    - Frontend: http://localhost:3000
-    - API Documentation: http://localhost:8484/swagger-ui.html
+4. **Доступ к приложению**
+    - Фронтенд: http://localhost:3000
+    - Документация API: http://localhost:8484/swagger-ui.html
 
-## 🔧 Development Setup
+## 🔧 Настройка для разработки
 
-For development, you can run individual services using Docker Compose:
+Для разработки можно запускать отдельные сервисы через Docker Compose:
 
-### Database Only
+### Только база данных
 ```bash
 docker-compose up postgres
 ```
 
-### Backend Only
+### Только бэкенд
 ```bash
 docker-compose up backend
 ```
-Backend will be available at: http://localhost:8484
+Бэкенд будет доступен по адресу: http://localhost:8484
 
-### Frontend Only
+### Только фронтенд
 ```bash
 docker-compose up frontend
 ```
-Frontend will be available at: http://localhost:3000
+Фронтенд будет доступен по адресу: http://localhost:3000
 
-### Multiple Services
+### Несколько сервисов
 ```bash
-# Backend + Database
+# Бэкенд + База данных
 docker-compose up backend postgres
 
-# Frontend + Backend + Database
+# Фронтенд + Бэкенд + База данных
 docker-compose up
 ```
 
-## 📄 License
+## 📚 Документация
 
-MIT License - see [LICENSE](LICENSE) file.
+- **[Документация Backend API](backend/docs/API.md)** — справочник REST API с эндпоинтами, примерами и обработкой ошибок
+
+## 📄 Лицензия
+
+MIT License — см. файл [LICENSE](LICENSE).

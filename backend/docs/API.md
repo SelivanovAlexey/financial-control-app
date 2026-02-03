@@ -1,3 +1,5 @@
+🌐 **Язык | Language:** 🇷🇺 | [🇬🇧](API.en.md)
+
 # Backend API documentation
 
 ![API Version](https://img.shields.io/badge/API-v1.0-blue)

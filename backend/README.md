@@ -1,80 +1,82 @@
-## Backend API Documentation
+🌐 **Язык | Language:** 🇷🇺 | [🇬🇧](README.en.md)
 
-The **backend module** is a Spring Boot 3 REST API that powers the Financial Control App.  
-It exposes HTTP endpoints for authentication, user profiles, and per-user income/expense management over a PostgreSQL database with Liquibase migrations.  
+## Документация Backend API
+
+**Backend модуль** — это Spring Boot 3 REST API, обеспечивающий работу Financial Control App.  
+Он предоставляет HTTP эндпоинты для аутентификации, профилей пользователей и управления доходами/расходами с использованием PostgreSQL и миграций Liquibase.
 
 ```text
 +--------------------+       HTTP(S)        +----------------------+       JDBC      +-------------------------+
-|  Next.js Frontend  |  <---------------->  |  Spring Boot Backend |  <------------> |  PostgreSQL + Liquibase |
+|  Next.js Frontend  |  <---------------->  |  Spring Boot Backend |  <-----------> |  PostgreSQL + Liquibase |
 +--------------------+                      +----------------------+                 +-------------------------+
                                                      |
                                                      | Spring Security, Validation,
                                                      | Global Error Handling (JSON)
 ```
 
-### 🧩 Backend Overview
+### 🧩 Обзор бэкенда
 
-- **Responsibilities**
-  - Session-based authentication with optional remember-me
-  - User profile + per-user incomes and expenses (CRUD)
-  - Unified validation and JSON error responses
+- **Функциональность**
+  - Сессионная аутентификация с опцией «запомнить меня»
+  - Профиль пользователя + доходы и расходы (CRUD)
+  - Единая валидация и JSON-ответы об ошибках
 
-- **Environments & Migrations**
-  - Runs in multiple environments (local, CI, prod) via Docker/Spring profiles
-  - Schema changes managed by Liquibase migrations, applied automatically or via pipeline
+- **Окружения и миграции**
+  - Работает в нескольких окружениях (local, CI, prod) через Docker/Spring профили
+  - Изменения схемы управляются миграциями Liquibase, применяемыми автоматически или через пайплайн
 
-This `docs` directory contains the complete HTTP API reference for this backend.
+Директория `docs` содержит полную справочную документацию HTTP API для этого бэкенда.
 
-### 📚 Documentation
+### 📚 Документация
 
-- **[API.md](docs/API.md)** – Comprehensive REST API documentation:
-  - Authentication
-  - Expense management (CRUD)
-  - Income management (CRUD)
-  - User profile
-  - Error handling
-  - Usage scenarios
+- **[API.md](docs/API.md)** – Полная документация REST API:
+  - Аутентификация
+  - Управление расходами (CRUD)
+  - Управление доходами (CRUD)
+  - Профиль пользователя
+  - Обработка ошибок
+  - Сценарии использования
 
-### 🔗 Endpoints Overview
+### 🔗 Обзор эндпоинтов
 
-#### 🔐 Authentication (`/api/auth`)
+#### 🔐 Аутентификация (`/api/auth`)
 
-| Method | Path               | Description                        |
-|--------|--------------------|------------------------------------|
-| POST   | `/api/auth/login`  | User login (session + remember-me) |
-| POST   | `/api/auth/signup` | User registration + auto login     |
-| POST   | `/api/auth/logout` | Logout and invalidate session      |
+| Метод  | Путь               | Описание                               |
+|--------|--------------------|----------------------------------------|
+| POST   | `/api/auth/login`  | Вход (сессия + запомнить меня)         |
+| POST   | `/api/auth/signup` | Регистрация + автоматический вход      |
+| POST   | `/api/auth/logout` | Выход и инвалидация сессии             |
 
-#### 💸 Expenses (`/api/expenses`)
+#### 💸 Расходы (`/api/expenses`)
 
-| Method | Path                 | Description                         |
-|--------|----------------------|-------------------------------------|
-| POST   | `/api/expenses`      | Create expense                      |
-| GET    | `/api/expenses`      | Get all expenses (current user)     |
-| GET    | `/api/expenses/{id}` | Get expense by id                   |
-| PUT    | `/api/expenses/{id}` | Update expense by id                |
-| DELETE | `/api/expenses/{id}` | Delete expense by id                |
+| Метод  | Путь                 | Описание                              |
+|--------|----------------------|---------------------------------------|
+| POST   | `/api/expenses`      | Создать расход                        |
+| GET    | `/api/expenses`      | Получить все расходы (текущий юзер)   |
+| GET    | `/api/expenses/{id}` | Получить расход по id                 |
+| PUT    | `/api/expenses/{id}` | Обновить расход по id                 |
+| DELETE | `/api/expenses/{id}` | Удалить расход по id                  |
 
-#### 💰 Incomes (`/api/incomes`)
+#### 💰 Доходы (`/api/incomes`)
 
-| Method | Path                | Description                          |
-|--------|---------------------|--------------------------------------|
-| POST   | `/api/incomes`      | Create income                        |
-| GET    | `/api/incomes`      | Get all incomes (current user)       |
-| GET    | `/api/incomes/{id}` | Get income by id                     |
-| PUT    | `/api/incomes/{id}` | Update income by id                  |
-| DELETE | `/api/incomes/{id}` | Delete income by id                  |
+| Метод  | Путь                | Описание                               |
+|--------|---------------------|----------------------------------------|
+| POST   | `/api/incomes`      | Создать доход                          |
+| GET    | `/api/incomes`      | Получить все доходы (текущий юзер)     |
+| GET    | `/api/incomes/{id}` | Получить доход по id                   |
+| PUT    | `/api/incomes/{id}` | Обновить доход по id                   |
+| DELETE | `/api/incomes/{id}` | Удалить доход по id                    |
 
-#### 👤 User Profile (`/api/users`)
+#### 👤 Профиль пользователя (`/api/users`)
 
-| Method | Path            | Description              |
-|--------|-----------------|--------------------------|
-| GET    | `/api/users/me` | Get current user profile |
-| PATCH  | `/api/users/me` | Update current user      |
+| Метод | Путь            | Описание                     |
+|-------|-----------------|------------------------------|
+| GET   | `/api/users/me` | Получить профиль текущего юзера |
+| PATCH | `/api/users/me` | Обновить текущего юзера      |
 
-### 📖 Navigation & Quick Access
+### 📖 Навигация
 
-- **Project root**: [Main Project README](../README.md)
-- **Full API reference**: [API.md](docs/API.md)
+- **Корень проекта**: [Главный README](../README.md)
+- **Полная документация API**: [API.md](docs/API.md)
 - **Swagger UI**: `http://localhost:8484/swagger-ui.html`
 - **Scalar**: `http://localhost:8484/scalar`
