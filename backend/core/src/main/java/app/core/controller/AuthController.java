@@ -1,10 +1,14 @@
 package app.core.controller;
 
+import app.core.errorhandling.model.CommonExceptionJson;
+import app.core.errorhandling.model.ValidationExceptionJson;
 import app.core.model.dto.AuthRequestDto;
 import app.core.model.dto.CreateUserRequestDto;
 import app.core.service.AuthServiceImpl;
 import app.core.service.UserManagementServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,10 +36,14 @@ public class AuthController {
     @Operation(summary = "api.auth.login")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "api.auth.login.success"),
-            @ApiResponse(responseCode = "400", description = "error.validation"),
-            @ApiResponse(responseCode = "401", description = "api.auth.login.failed"),
-            @ApiResponse(responseCode = "405", description = "error.method.not.allowed"),
-            @ApiResponse(responseCode = "500", description = "error.internal.server")
+            @ApiResponse(responseCode = "400", description = "error.validation",
+                    content = @Content(schema = @Schema(implementation = ValidationExceptionJson.class))),
+            @ApiResponse(responseCode = "401", description = "api.auth.login.failed",
+                    content = @Content(schema = @Schema(implementation = CommonExceptionJson.class))),
+            @ApiResponse(responseCode = "405", description = "error.method.not.allowed",
+                    content = @Content(schema = @Schema(implementation = CommonExceptionJson.class))),
+            @ApiResponse(responseCode = "500", description = "error.internal.server",
+                    content = @Content(schema = @Schema(implementation = CommonExceptionJson.class)))
     })
     public ResponseEntity<Void> login(@Valid @RequestBody AuthRequestDto authRequest, HttpServletRequest request, HttpServletResponse response) {
         authService.authenticate(authRequest, request, response);
@@ -46,10 +54,14 @@ public class AuthController {
     @Operation(summary = "api.auth.signup")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "api.auth.signup.success"),
-            @ApiResponse(responseCode = "400", description = "error.validation"),
-            @ApiResponse(responseCode = "409", description = "api.auth.user.exists"),
-            @ApiResponse(responseCode = "405", description = "error.method.not.allowed"),
-            @ApiResponse(responseCode = "500", description = "error.internal.server")
+            @ApiResponse(responseCode = "400", description = "error.validation",
+                    content = @Content(schema = @Schema(implementation = ValidationExceptionJson.class))),
+            @ApiResponse(responseCode = "409", description = "api.auth.user.exists",
+                    content = @Content(schema = @Schema(implementation = CommonExceptionJson.class))),
+            @ApiResponse(responseCode = "405", description = "error.method.not.allowed",
+                    content = @Content(schema = @Schema(implementation = CommonExceptionJson.class))),
+            @ApiResponse(responseCode = "500", description = "error.internal.server",
+                    content = @Content(schema = @Schema(implementation = CommonExceptionJson.class)))
     })
     public ResponseEntity<Void> signUp(@Valid @RequestBody CreateUserRequestDto registerRequest, HttpServletRequest request, HttpServletResponse response) {
         userManagementService.createUser(registerRequest);
