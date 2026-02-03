@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-
+//TODO: че как много transactional?
 @Slf4j
 @Service
 @RequiredArgsConstructor

@@ -25,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -82,16 +83,16 @@ class IncomeServiceImplUnitTest {
     void shouldCreateIncomeSuccessfully() {
         // Given
         CreateTransactionBaseRequestDto request =
-                createTransactionRequest(5000L, "Зарплата", "Месячная зарплата");
+                createTransactionRequest(BigDecimal.valueOf(5000.21), "Зарплата", "Месячная зарплата");
 
         IncomeEntity mappedEntity =
-                createIncomeEntity(null, 5000L, "Зарплата", "Месячная зарплата", null);
+                createIncomeEntity(null, BigDecimal.valueOf(5000.21), "Зарплата", "Месячная зарплата", null);
 
         IncomeEntity savedEntity =
-                createIncomeEntity(1L, 5000L, "Зарплата", "Месячная зарплата", testUser);
+                createIncomeEntity(1L, BigDecimal.valueOf(5000.21), "Зарплата", "Месячная зарплата", testUser);
 
         TransactionBaseResponseDto expectedResponse =
-                createResponseDto(1L, 5000L, "Зарплата", "Месячная зарплата");
+                createResponseDto(1L, BigDecimal.valueOf(5000.21), "Зарплата", "Месячная зарплата");
 
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
         when(incomeMapper.createIncomeFromRequest(request)).thenReturn(mappedEntity);
@@ -108,7 +109,7 @@ class IncomeServiceImplUnitTest {
 
         verify(incomeRepository).save(argThat(entity -> {
             assertThat(entity.getUser()).isEqualTo(testUser);
-            assertThat(entity.getAmount()).isEqualTo(5000L);
+            assertThat(entity.getAmount()).isEqualTo(BigDecimal.valueOf(5000.21));
             assertThat(entity.getCategory()).isEqualTo("Зарплата");
             assertThat(entity.getCreateDate()).isEqualTo(testDate);
             return true;
@@ -121,16 +122,16 @@ class IncomeServiceImplUnitTest {
     void shouldCreateIncomeSuccessfullyWhenDescriptionIsNull() {
         // Given
         CreateTransactionBaseRequestDto request =
-                createTransactionRequest(5000L, "Зарплата", null);
+                createTransactionRequest(BigDecimal.valueOf(5000.21), "Зарплата", null);
 
         IncomeEntity mappedEntity =
-                createIncomeEntity(null, 5000L, "Зарплата", null, null);
+                createIncomeEntity(null, BigDecimal.valueOf(5000.21), "Зарплата", null, null);
 
         IncomeEntity savedEntity =
-                createIncomeEntity(1L, 5000L, "Зарплата", null, testUser);
+                createIncomeEntity(1L, BigDecimal.valueOf(5000.21), "Зарплата", null, testUser);
 
         TransactionBaseResponseDto expectedResponse =
-                createResponseDto(1L, 5000L, "Зарплата", null);
+                createResponseDto(1L, BigDecimal.valueOf(5000.21), "Зарплата", null);
 
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
         when(incomeMapper.createIncomeFromRequest(request)).thenReturn(mappedEntity);
@@ -147,7 +148,7 @@ class IncomeServiceImplUnitTest {
 
         verify(incomeRepository).save(argThat(entity -> {
             assertThat(entity.getUser()).isEqualTo(testUser);
-            assertThat(entity.getAmount()).isEqualTo(5000L);
+            assertThat(entity.getAmount()).isEqualTo(BigDecimal.valueOf(5000.21));
             assertThat(entity.getCategory()).isEqualTo("Зарплата");
             assertThat(entity.getCreateDate()).isEqualTo(testDate);
             assertThat(entity.getDescription()).isNull();
@@ -166,10 +167,10 @@ class IncomeServiceImplUnitTest {
         // Given
         Long incomeId = 1L;
         IncomeEntity existingIncome =
-                createIncomeEntity(1L, 5000L, "Зарплата", "Месячная зарплата", testUser);
+                createIncomeEntity(1L, BigDecimal.valueOf(5000.21), "Зарплата", "Месячная зарплата", testUser);
 
         TransactionBaseResponseDto expectedResponse =
-                createResponseDto(1L, 5000L, "Зарплата", "Месячная зарплата");
+                createResponseDto(1L, BigDecimal.valueOf(5000.21), "Зарплата", "Месячная зарплата");
 
         when(incomeRepository.findById(incomeId)).thenReturn(Optional.of(existingIncome));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
@@ -189,13 +190,13 @@ class IncomeServiceImplUnitTest {
     void shouldReturnAllUserIncomesSuccessfully() {
         // Given
         List<IncomeEntity> userIncomes = List.of(
-                createIncomeEntity(1L, 5000L, "Зарплата", "Месячная зарплата", testUser),
-                createIncomeEntity(2L, 2000L, "Переводы", "Дополнительный доход", testUser)
+                createIncomeEntity(1L, BigDecimal.valueOf(5000.21), "Зарплата", "Месячная зарплата", testUser),
+                createIncomeEntity(2L, BigDecimal.valueOf(2000.21), "Переводы", "Дополнительный доход", testUser)
         );
 
         List<TransactionBaseResponseDto> expectedResponses = List.of(
-                createResponseDto(1L, 5000L, "Зарплата", "Месячная зарплата"),
-                createResponseDto(2L, 2000L, "Переводы", "Дополнительный доход")
+                createResponseDto(1L, BigDecimal.valueOf(5000.21), "Зарплата", "Месячная зарплата"),
+                createResponseDto(2L, BigDecimal.valueOf(2000.21), "Переводы", "Дополнительный доход")
         );
 
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
@@ -239,16 +240,16 @@ class IncomeServiceImplUnitTest {
         // Given
         Long incomeId = 1L;
         UpdateTransactionBaseRequestDto updateRequest =
-                createUpdateRequest(6000L, "Переводы", "Годовая премия");
+                createUpdateRequest(BigDecimal.valueOf(6000.21), "Переводы", "Годовая премия");
 
         IncomeEntity existingIncome =
-                createIncomeEntity(1L, 5000L, "Зарплата", "Месячная зарплата", testUser);
+                createIncomeEntity(1L, BigDecimal.valueOf(5000.21), "Зарплата", "Месячная зарплата", testUser);
 
         IncomeEntity updatedIncome =
-                createIncomeEntity(1L, 6000L, "Переводы", "Годовая премия", testUser);
+                createIncomeEntity(1L, BigDecimal.valueOf(6000.21), "Переводы", "Годовая премия", testUser);
 
         TransactionBaseResponseDto expectedResponse =
-                createResponseDto(1L, 6000L, "Переводы", "Годовая премия");
+                createResponseDto(1L, BigDecimal.valueOf(6000.21), "Переводы", "Годовая премия");
 
         when(incomeRepository.findById(incomeId)).thenReturn(Optional.of(existingIncome));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
@@ -274,13 +275,13 @@ class IncomeServiceImplUnitTest {
                 createUpdateRequest(null, "Новая категория", null); // amount и description = null
 
         IncomeEntity existingIncome =
-                createIncomeEntity(1L, 5000L, "Зарплата", "Месячная зарплата", testUser);
+                createIncomeEntity(1L, BigDecimal.valueOf(5000.21), "Зарплата", "Месячная зарплата", testUser);
 
         IncomeEntity expectedUpdatedIncome =
-                createIncomeEntity(1L, 5000L, "Новая категория", "Месячная зарплата", testUser);
+                createIncomeEntity(1L, BigDecimal.valueOf(5000.21), "Новая категория", "Месячная зарплата", testUser);
 
         TransactionBaseResponseDto expectedResponse =
-                createResponseDto(1L, 5000L, "Новая категория", "Месячная зарплата");
+                createResponseDto(1L, BigDecimal.valueOf(5000.21), "Новая категория", "Месячная зарплата");
 
         when(incomeRepository.findById(incomeId)).thenReturn(Optional.of(existingIncome));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
@@ -307,7 +308,7 @@ class IncomeServiceImplUnitTest {
         // Given
         Long incomeId = 1L;
         IncomeEntity existingIncome =
-                createIncomeEntity(1L, 5000L, "Зарплата", "Месячная зарплата", testUser);
+                createIncomeEntity(1L, BigDecimal.valueOf(5000.21), "Зарплата", "Месячная зарплата", testUser);
 
         when(incomeRepository.findById(incomeId)).thenReturn(Optional.of(existingIncome));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
@@ -330,7 +331,7 @@ class IncomeServiceImplUnitTest {
     void shouldThrowExceptionWhenSecurityContextUserIsNullOnCreate() {
         // Given
         CreateTransactionBaseRequestDto request =
-                createTransactionRequest(5000L, "Зарплата", "Месячная зарплата");
+                createTransactionRequest(BigDecimal.valueOf(5000.21), "Зарплата", "Месячная зарплата");
 
         when(securityProvider.getUserFromSecurityContext()).thenReturn(null);
 
@@ -363,7 +364,7 @@ class IncomeServiceImplUnitTest {
         // Given
         Long incomeId = 1L;
         IncomeEntity incomeOfAnotherUser =
-                createIncomeEntity(1L, 5000L, "Зарплата", "Месячная зарплата", otherUser);
+                createIncomeEntity(1L, BigDecimal.valueOf(5000.21), "Зарплата", "Месячная зарплата", otherUser);
 
         when(incomeRepository.findById(incomeId)).thenReturn(Optional.of(incomeOfAnotherUser));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
@@ -383,12 +384,12 @@ class IncomeServiceImplUnitTest {
     private void executeOperation(TestUtils.Operation operation, Long incomeId) {
         switch (operation) {
             case GET -> incomeService.get(incomeId);
-            case UPDATE -> incomeService.update(incomeId, createUpdateRequest(6000L, "Переводы", "Годовая премия"));
+            case UPDATE -> incomeService.update(incomeId, createUpdateRequest(BigDecimal.valueOf(6000.21), "Переводы", "Годовая премия"));
             case DELETE -> incomeService.delete(incomeId);
         }
     }
 
-    private CreateTransactionBaseRequestDto createTransactionRequest(Long amount, String category, String description) {
+    private CreateTransactionBaseRequestDto createTransactionRequest(BigDecimal amount, String category, String description) {
         return CreateTransactionBaseRequestDto.builder()
                 .amount(amount)
                 .category(category)
@@ -397,7 +398,7 @@ class IncomeServiceImplUnitTest {
                 .build();
     }
 
-    private UpdateTransactionBaseRequestDto createUpdateRequest(Long amount, String category, String description) {
+    private UpdateTransactionBaseRequestDto createUpdateRequest(BigDecimal amount, String category, String description) {
         return UpdateTransactionBaseRequestDto.builder()
                 .amount(amount)
                 .category(category)
@@ -405,7 +406,7 @@ class IncomeServiceImplUnitTest {
                 .build();
     }
 
-    private IncomeEntity createIncomeEntity(Long id, Long amount, String category, String description, UserEntity user) {
+    private IncomeEntity createIncomeEntity(Long id, BigDecimal amount, String category, String description, UserEntity user) {
         return IncomeEntity.builder()
                 .id(id)
                 .amount(amount)
@@ -416,7 +417,7 @@ class IncomeServiceImplUnitTest {
                 .build();
     }
 
-    private TransactionBaseResponseDto createResponseDto(Long id, Long amount, String category, String description) {
+    private TransactionBaseResponseDto createResponseDto(Long id, BigDecimal amount, String category, String description) {
         return TransactionBaseResponseDto.builder()
                 .id(id)
                 .amount(amount)

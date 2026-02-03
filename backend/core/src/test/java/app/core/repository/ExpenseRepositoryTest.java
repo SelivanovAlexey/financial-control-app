@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -39,7 +40,7 @@ class ExpenseRepositoryTest {
         entityManager.persistAndFlush(user);
 
         ExpenseEntity expense1 = ExpenseEntity.builder()
-                .amount(10000L)
+                .amount(BigDecimal.valueOf(10000.21))
                 .category("Food")
                 .description("Lunch")
                 .createDate(currentDate.minusDays(1))
@@ -47,7 +48,7 @@ class ExpenseRepositoryTest {
                 .build();
 
         ExpenseEntity expense2 = ExpenseEntity.builder()
-                .amount(5000L)
+                .amount(BigDecimal.valueOf(5000.21))
                 .category("Transport")
                 .description("Bus ticket")
                 .createDate(currentDate)
@@ -105,7 +106,7 @@ class ExpenseRepositoryTest {
         entityManager.persistAndFlush(user2);
 
         ExpenseEntity expense = ExpenseEntity.builder()
-                .amount(10000L)
+                .amount(BigDecimal.valueOf(10000.21))
                 .category("Food")
                 .description("Lunch")
                 .createDate(currentDate)
@@ -133,14 +134,14 @@ class ExpenseRepositoryTest {
 
         OffsetDateTime now = currentDate;
         ExpenseEntity oldExpense = ExpenseEntity.builder()
-                .amount(5000L)
+                .amount(BigDecimal.valueOf(5000.21))
                 .category("Old Expense")
                 .createDate(now.minusDays(2))
                 .user(user)
                 .build();
 
         ExpenseEntity newExpense = ExpenseEntity.builder()
-                .amount(10000L)
+                .amount(BigDecimal.valueOf(10000.21))
                 .category("New Expense")
                 .createDate(now)
                 .user(user)

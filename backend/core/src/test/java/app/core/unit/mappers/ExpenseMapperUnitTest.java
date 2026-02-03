@@ -13,9 +13,11 @@ import org.mapstruct.factory.Mappers;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.BIG_DECIMAL;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ExpenseMapper Unit Tests")
@@ -38,14 +40,14 @@ class ExpenseMapperUnitTest {
     void shouldCreateExpenseFromRequest() {
         // Given
         CreateTransactionBaseRequestDto request = new CreateTransactionBaseRequestDto(
-                10000L, "Food", currentDate, "Lunch"
+                BigDecimal.valueOf(10000.21), "Food", currentDate, "Lunch"
         );
 
         // When
         ExpenseEntity result = expenseMapper.createExpenseFromRequest(request);
 
         // Then
-        assertThat(result.getAmount()).isEqualTo(10000L);
+        assertThat(result.getAmount()).isEqualTo(BigDecimal.valueOf(10000.21));
         assertThat(result.getCategory()).isEqualTo("Food");
         assertThat(result.getDescription()).isEqualTo("Lunch");
         assertThat(result.getCreateDate()).isEqualTo(currentDate);
@@ -58,14 +60,14 @@ class ExpenseMapperUnitTest {
     void shouldCreateExpenseWithNullDescription() {
         // Given
         CreateTransactionBaseRequestDto request = new CreateTransactionBaseRequestDto(
-                5000L, "Transport", currentDate, null
+                BigDecimal.valueOf(5000.21), "Transport", currentDate, null
         );
 
         // When
         ExpenseEntity result = expenseMapper.createExpenseFromRequest(request);
 
         // Then
-        assertThat(result.getAmount()).isEqualTo(5000L);
+        assertThat(result.getAmount()).isEqualTo(BigDecimal.valueOf(5000.21));
         assertThat(result.getCategory()).isEqualTo("Transport");
         assertThat(result.getDescription()).isNull();
         assertThat(result.getCreateDate()).isEqualTo(currentDate);
@@ -79,14 +81,14 @@ class ExpenseMapperUnitTest {
         // Given
         ExpenseEntity expense = ExpenseEntity.builder()
                 .id(1L)
-                .amount(5000L)
+                .amount(BigDecimal.valueOf(50000.21))
                 .category("Old Category")
                 .description("Old Description")
                 .createDate(oldDate)
                 .build();
 
         UpdateTransactionBaseRequestDto request = new UpdateTransactionBaseRequestDto(
-                10000L, "New Category", currentDate, "New Description"
+                BigDecimal.valueOf(10000.21), "New Category", currentDate, "New Description"
         );
 
         // When
@@ -94,7 +96,7 @@ class ExpenseMapperUnitTest {
 
         // Then
         assertThat(expense.getId()).isEqualTo(1L);
-        assertThat(expense.getAmount()).isEqualTo(10000L);
+        assertThat(expense.getAmount()).isEqualTo(BigDecimal.valueOf(10000.21));
         assertThat(expense.getCategory()).isEqualTo("New Category");
         assertThat(expense.getDescription()).isEqualTo("New Description");
         assertThat(expense.getCreateDate()).isEqualTo(currentDate);
@@ -106,7 +108,7 @@ class ExpenseMapperUnitTest {
     void shouldPartiallyUpdateExpenseIgnoreNullValues() {
         // Given
         ExpenseEntity expense = ExpenseEntity.builder()
-                .amount(5000L)
+                .amount(BigDecimal.valueOf(5000.21))
                 .category("Original Category")
                 .description("Original Description")
                 .createDate(oldDate)
@@ -120,7 +122,7 @@ class ExpenseMapperUnitTest {
         expenseMapper.updateExpenseFromRequest(request, expense);
 
         // Then
-        assertThat(expense.getAmount()).isEqualTo(5000L);
+        assertThat(expense.getAmount()).isEqualTo(BigDecimal.valueOf(5000.21));
         assertThat(expense.getCategory()).isEqualTo("Updated Category");
         assertThat(expense.getDescription()).isEqualTo("Original Description");
         assertThat(expense.getCreateDate()).isEqualTo(oldDate);
@@ -131,21 +133,21 @@ class ExpenseMapperUnitTest {
     void shouldUpdateExpenseWithZeroEmptyValues() {
         // Given
         ExpenseEntity expense = ExpenseEntity.builder()
-                .amount(5000L)
+                .amount(BigDecimal.valueOf(5000.21))
                 .category("Original Category")
                 .description("Original Description")
                 .createDate(oldDate)
                 .build();
 
         UpdateTransactionBaseRequestDto request = new UpdateTransactionBaseRequestDto(
-                0L, "", currentDate, ""
+                BigDecimal.ZERO, "", currentDate, ""
         );
 
         // When
         expenseMapper.updateExpenseFromRequest(request, expense);
 
         // Then
-        assertThat(expense.getAmount()).isEqualTo(0L);
+        assertThat(expense.getAmount()).isEqualTo(BigDecimal.ZERO);
         assertThat(expense.getCategory()).isEqualTo("");
         assertThat(expense.getDescription()).isEqualTo("");
         assertThat(expense.getCreateDate()).isEqualTo(currentDate);
@@ -157,7 +159,7 @@ class ExpenseMapperUnitTest {
         // Given
         ExpenseEntity expense = ExpenseEntity.builder()
                 .id(1L)
-                .amount(10000L)
+                .amount(BigDecimal.valueOf(10000.21))
                 .category("Food")
                 .description("Lunch")
                 .createDate(currentDate)
@@ -168,7 +170,7 @@ class ExpenseMapperUnitTest {
 
         // Then
         assertThat(result.id()).isEqualTo(1L);
-        assertThat(result.amount()).isEqualTo(10000L);
+        assertThat(result.amount()).isEqualTo(BigDecimal.valueOf(10000.21));
         assertThat(result.category()).isEqualTo("Food");
         assertThat(result.description()).isEqualTo("Lunch");
         assertThat(result.createDate()).isEqualTo(currentDate); // Теперь проверяем дату!
@@ -180,7 +182,7 @@ class ExpenseMapperUnitTest {
         // Given
         ExpenseEntity expense = ExpenseEntity.builder()
                 .id(2L)
-                .amount(5000L)
+                .amount(BigDecimal.valueOf(5000.21))
                 .category("Transport")
                 .description(null)
                 .createDate(currentDate)
@@ -191,7 +193,7 @@ class ExpenseMapperUnitTest {
 
         // Then
         assertThat(result.id()).isEqualTo(2L);
-        assertThat(result.amount()).isEqualTo(5000L);
+        assertThat(result.amount()).isEqualTo(BigDecimal.valueOf(5000.21));
         assertThat(result.category()).isEqualTo("Transport");
         assertThat(result.description()).isNull();
         assertThat(result.createDate()).isEqualTo(currentDate);

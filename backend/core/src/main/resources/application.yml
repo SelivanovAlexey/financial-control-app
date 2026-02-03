@@ -24,11 +24,19 @@ spring:
     change-log: classpath:/db/master.xml
     default-schema: ${DATABASE_SCHEMA}
     liquibase-schema: liquibase
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+  web:
+    locale: en_US
+    locale-resolver: accept_header
 cors:
   allowed-origins: ${FRONTEND_URL}
 logging:
   level:
     app.core: ${LOG_LEVEL}
+
 management:
   endpoints:
     web:
@@ -38,6 +46,14 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+
 springdoc:
+  swagger-ui:
+    enabled: true
+    tagsSorter: alpha
+    #TODO: low-prio: сортировка для методов не работает
+    #TODO: low-prio: не работает интерполяция строк в @schema (dto)
+    operations-sorter: method
   api-docs:
-    enabled: ${API_DOCS_ENABLED}
+    enabled: true
+    resolve-schema-properties: true

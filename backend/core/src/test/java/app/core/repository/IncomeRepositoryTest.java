@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -40,7 +41,7 @@ class IncomeRepositoryTest {
         entityManager.persistAndFlush(user);
 
         IncomeEntity income1 = IncomeEntity.builder()
-                .amount(50000L)
+                .amount(BigDecimal.valueOf(50000.21))
                 .category("Salary")
                 .description("Monthly salary")
                 .createDate(currentDate.minusDays(1))
@@ -48,7 +49,7 @@ class IncomeRepositoryTest {
                 .build();
 
         IncomeEntity income2 = IncomeEntity.builder()
-                .amount(10000L)
+                .amount(BigDecimal.valueOf(10000.21))
                 .category("Freelance")
                 .description("Project payment")
                 .createDate(currentDate)
@@ -106,7 +107,7 @@ class IncomeRepositoryTest {
         entityManager.persistAndFlush(user2);
 
         IncomeEntity income = IncomeEntity.builder()
-                .amount(50000L)
+                .amount(BigDecimal.valueOf(50000.21))
                 .category("Salary")
                 .description("Monthly salary")
                 .createDate(currentDate)
@@ -134,14 +135,14 @@ class IncomeRepositoryTest {
 
         OffsetDateTime now = currentDate;
         IncomeEntity oldIncome = IncomeEntity.builder()
-                .amount(30000L)
+                .amount(BigDecimal.valueOf(30000.21))
                 .category("Old Income")
                 .createDate(now.minusDays(2))
                 .user(user)
                 .build();
 
         IncomeEntity newIncome = IncomeEntity.builder()
-                .amount(50000L)
+                .amount(BigDecimal.valueOf(50000.21))
                 .category("New Income")
                 .createDate(now)
                 .user(user)

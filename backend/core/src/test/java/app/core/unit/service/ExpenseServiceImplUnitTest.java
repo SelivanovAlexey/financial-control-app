@@ -25,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -81,16 +82,16 @@ class ExpenseServiceImplUnitTest {
     void shouldCreateExpenseSuccessfully() {
         // Given
         CreateTransactionBaseRequestDto request =
-                createTransactionRequest(1500L, "Продукты", "Покупка продуктов на неделю");
+                createTransactionRequest(BigDecimal.valueOf(1500.21), "Продукты", "Покупка продуктов на неделю");
 
         ExpenseEntity mappedEntity =
-                createExpenseEntity(null, 1500L, "Продукты", "Покупка продуктов на неделю", null);
+                createExpenseEntity(null, BigDecimal.valueOf(1500.21), "Продукты", "Покупка продуктов на неделю", null);
 
         ExpenseEntity savedEntity =
-                createExpenseEntity(1L, 1500L, "Продукты", "Покупка продуктов на неделю", testUser);
+                createExpenseEntity(1L, BigDecimal.valueOf(1500.21), "Продукты", "Покупка продуктов на неделю", testUser);
 
         TransactionBaseResponseDto expectedResponse =
-                createResponseDto(1L, 1500L, "Продукты", "Покупка продуктов на неделю");
+                createResponseDto(1L, BigDecimal.valueOf(1500.21), "Продукты", "Покупка продуктов на неделю");
 
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
         when(expenseMapper.createExpenseFromRequest(request)).thenReturn(mappedEntity);
@@ -107,7 +108,7 @@ class ExpenseServiceImplUnitTest {
 
         verify(expenseRepository).save(argThat(entity -> {
             assertThat(entity.getUser()).isEqualTo(testUser);
-            assertThat(entity.getAmount()).isEqualTo(1500L);
+            assertThat(entity.getAmount()).isEqualTo(BigDecimal.valueOf(1500.21));
             assertThat(entity.getCategory()).isEqualTo("Продукты");
             assertThat(entity.getCreateDate()).isEqualTo(testDate);
             return true;
@@ -120,16 +121,16 @@ class ExpenseServiceImplUnitTest {
     void shouldCreateExpenseSuccessfullyWhenDescriptionIsNull() {
         // Given
         CreateTransactionBaseRequestDto request =
-                createTransactionRequest(1500L, "Продукты", null);
+                createTransactionRequest(BigDecimal.valueOf(1500.21), "Продукты", null);
 
         ExpenseEntity mappedEntity =
-                createExpenseEntity(null, 1500L, "Продукты", null, null);
+                createExpenseEntity(null, BigDecimal.valueOf(1500.21), "Продукты", null, null);
 
         ExpenseEntity savedEntity =
-                createExpenseEntity(1L, 1500L, "Продукты", null, testUser);
+                createExpenseEntity(1L, BigDecimal.valueOf(1500.21), "Продукты", null, testUser);
 
         TransactionBaseResponseDto expectedResponse =
-                createResponseDto(1L, 1500L, "Продукты", null);
+                createResponseDto(1L, BigDecimal.valueOf(1500.21), "Продукты", null);
 
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
         when(expenseMapper.createExpenseFromRequest(request)).thenReturn(mappedEntity);
@@ -146,7 +147,7 @@ class ExpenseServiceImplUnitTest {
 
         verify(expenseRepository).save(argThat(entity -> {
             assertThat(entity.getUser()).isEqualTo(testUser);
-            assertThat(entity.getAmount()).isEqualTo(1500L);
+            assertThat(entity.getAmount()).isEqualTo(BigDecimal.valueOf(1500.21));
             assertThat(entity.getCategory()).isEqualTo("Продукты");
             assertThat(entity.getCreateDate()).isEqualTo(testDate);
             assertThat(entity.getDescription()).isNull();
@@ -165,10 +166,10 @@ class ExpenseServiceImplUnitTest {
         // Given
         Long expenseId = 1L;
         ExpenseEntity existingExpense =
-                createExpenseEntity(1L, 1500L, "Продукты", "Покупка продуктов на неделю", testUser);
+                createExpenseEntity(1L, BigDecimal.valueOf(1500.21), "Продукты", "Покупка продуктов на неделю", testUser);
 
         TransactionBaseResponseDto expectedResponse =
-                createResponseDto(1L, 1500L, "Продукты", "Покупка продуктов на неделю");
+                createResponseDto(1L, BigDecimal.valueOf(1500.21), "Продукты", "Покупка продуктов на неделю");
 
         when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(existingExpense));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
@@ -188,13 +189,13 @@ class ExpenseServiceImplUnitTest {
     void shouldReturnAllUserExpensesSuccessfully() {
         // Given
         List<ExpenseEntity> userExpenses = List.of(
-                createExpenseEntity(1L, 1500L, "Продукты", "Покупка продуктов на неделю", testUser),
-                createExpenseEntity(2L, 2500L, "Развлечения", "Поход в кино", testUser)
+                createExpenseEntity(1L, BigDecimal.valueOf(1500.21), "Продукты", "Покупка продуктов на неделю", testUser),
+                createExpenseEntity(2L, BigDecimal.valueOf(2500.21), "Развлечения", "Поход в кино", testUser)
         );
 
         List<TransactionBaseResponseDto> expectedResponses = List.of(
-                createResponseDto(1L, 1500L, "Продукты", "Покупка продуктов на неделю"),
-                createResponseDto(2L, 2500L, "Развлечения", "Поход в кино")
+                createResponseDto(1L, BigDecimal.valueOf(1500.21), "Продукты", "Покупка продуктов на неделю"),
+                createResponseDto(2L, BigDecimal.valueOf(2500.21), "Развлечения", "Поход в кино")
         );
 
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
@@ -238,16 +239,16 @@ class ExpenseServiceImplUnitTest {
         // Given
         Long expenseId = 1L;
         UpdateTransactionBaseRequestDto updateRequest =
-                createUpdateRequest(3000L, "Медицина", "Визит к врачу");
+                createUpdateRequest(BigDecimal.valueOf(3000.21), "Медицина", "Визит к врачу");
 
         ExpenseEntity existingExpense =
-                createExpenseEntity(1L, 1500L, "Продукты", "Покупка продуктов на неделю", testUser);
+                createExpenseEntity(1L, BigDecimal.valueOf(1500.21), "Продукты", "Покупка продуктов на неделю", testUser);
 
         ExpenseEntity updatedExpense =
-                createExpenseEntity(1L, 3000L, "Медицина", "Визит к врачу", testUser);
+                createExpenseEntity(1L, BigDecimal.valueOf(3000.21), "Медицина", "Визит к врачу", testUser);
 
         TransactionBaseResponseDto expectedResponse =
-                createResponseDto(1L, 3000L, "Медицина", "Визит к врачу");
+                createResponseDto(1L, BigDecimal.valueOf(3000.21), "Медицина", "Визит к врачу");
 
         when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(existingExpense));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
@@ -273,13 +274,13 @@ class ExpenseServiceImplUnitTest {
                 createUpdateRequest(null, "Новая категория", null); // amount и description = null
 
         ExpenseEntity existingExpense =
-                createExpenseEntity(1L, 1500L, "Продукты", "Покупка продуктов на неделю", testUser);
+                createExpenseEntity(1L, BigDecimal.valueOf(1500.21), "Продукты", "Покупка продуктов на неделю", testUser);
 
         ExpenseEntity expectedUpdatedExpense =
-                createExpenseEntity(1L, 1500L, "Новая категория", "Покупка продуктов на неделю", testUser);
+                createExpenseEntity(1L, BigDecimal.valueOf(1500.21), "Новая категория", "Покупка продуктов на неделю", testUser);
 
         TransactionBaseResponseDto expectedResponse =
-                createResponseDto(1L, 1500L, "Новая категория", "Покупка продуктов на неделю");
+                createResponseDto(1L, BigDecimal.valueOf(1500.21), "Новая категория", "Покупка продуктов на неделю");
 
         when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(existingExpense));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
@@ -306,7 +307,7 @@ class ExpenseServiceImplUnitTest {
         // Given
         Long expenseId = 1L;
         ExpenseEntity existingExpense =
-                createExpenseEntity(1L, 1500L, "Продукты", "Покупка продуктов на неделю", testUser);
+                createExpenseEntity(1L, BigDecimal.valueOf(1500.21), "Продукты", "Покупка продуктов на неделю", testUser);
 
         when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(existingExpense));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
@@ -329,7 +330,7 @@ class ExpenseServiceImplUnitTest {
     void shouldThrowExceptionWhenSecurityContextUserIsNullOnCreate() {
         // Given
         CreateTransactionBaseRequestDto request =
-                createTransactionRequest(1500L, "Продукты", "Покупка продуктов на неделю");
+                createTransactionRequest(BigDecimal.valueOf(1500.21), "Продукты", "Покупка продуктов на неделю");
 
         when(securityProvider.getUserFromSecurityContext()).thenReturn(null);
 
@@ -362,7 +363,7 @@ class ExpenseServiceImplUnitTest {
         // Given
         Long expenseId = 1L;
         ExpenseEntity expenseOfAnotherUser =
-                createExpenseEntity(1L, 1500L, "Продукты", "Покупка продуктов на неделю", otherUser);
+                createExpenseEntity(1L, BigDecimal.valueOf(1500.21), "Продукты", "Покупка продуктов на неделю", otherUser);
 
         when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expenseOfAnotherUser));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
@@ -382,12 +383,12 @@ class ExpenseServiceImplUnitTest {
     private void executeOperation(TestUtils.Operation operation, Long expenseId) {
         switch (operation) {
             case GET -> expenseService.get(expenseId);
-            case UPDATE -> expenseService.update(expenseId, createUpdateRequest(3000L, "Медицина", "Визит к врачу"));
+            case UPDATE -> expenseService.update(expenseId, createUpdateRequest(BigDecimal.valueOf(3000.21), "Медицина", "Визит к врачу"));
             case DELETE -> expenseService.delete(expenseId);
         }
     }
 
-    private CreateTransactionBaseRequestDto createTransactionRequest(Long amount, String category, String description) {
+    private CreateTransactionBaseRequestDto createTransactionRequest(BigDecimal amount, String category, String description) {
         return CreateTransactionBaseRequestDto.builder()
                 .amount(amount)
                 .category(category)
@@ -396,7 +397,7 @@ class ExpenseServiceImplUnitTest {
                 .build();
     }
 
-    private UpdateTransactionBaseRequestDto createUpdateRequest(Long amount, String category, String description) {
+    private UpdateTransactionBaseRequestDto createUpdateRequest(BigDecimal amount, String category, String description) {
         return UpdateTransactionBaseRequestDto.builder()
                 .amount(amount)
                 .category(category)
@@ -404,7 +405,7 @@ class ExpenseServiceImplUnitTest {
                 .build();
     }
 
-    private ExpenseEntity createExpenseEntity(Long id, Long amount, String category, String description, UserEntity user) {
+    private ExpenseEntity createExpenseEntity(Long id, BigDecimal amount, String category, String description, UserEntity user) {
         return ExpenseEntity.builder()
                 .id(id)
                 .amount(amount)
@@ -415,7 +416,7 @@ class ExpenseServiceImplUnitTest {
                 .build();
     }
 
-    private TransactionBaseResponseDto createResponseDto(Long id, Long amount, String category, String description) {
+    private TransactionBaseResponseDto createResponseDto(Long id, BigDecimal amount, String category, String description) {
         return TransactionBaseResponseDto.builder()
                 .id(id)
                 .amount(amount)

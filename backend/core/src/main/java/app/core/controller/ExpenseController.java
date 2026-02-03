@@ -10,49 +10,90 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Контроллер для расходов.
- */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/expenses")
-@Tag(name = "Контроллер расходов", description = "Контроллер для расходов")
-@ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Запрос выполнен успешно"),
-@ApiResponse(responseCode = "401", description = "Ошибка доступа(пользователь не авторизован)")})
+@Tag(name = "api.expenses.tag", description = "api.expenses.tag.description")
 public class ExpenseController {
 
     private final ExpenseService expenseService;
+
     @GetMapping("/{id}")
-    @Operation(summary = "Получить информацию о расходе по id дохода")
-    public TransactionBaseResponseDto get(@PathVariable Long id) {
-        return expenseService.get(id);
+    @Operation(summary = "api.expenses.get.by.id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "api.expenses.get.by.id.success"),
+            @ApiResponse(responseCode = "401", description = "error.unauthorized"),
+            @ApiResponse(responseCode = "403", description = "error.forbidden"),
+            @ApiResponse(responseCode = "404", description = "api.expenses.not.found"),
+            @ApiResponse(responseCode = "405", description = "error.method.not.allowed"),
+            @ApiResponse(responseCode = "500", description = "error.internal.server")
+    })
+    public ResponseEntity<TransactionBaseResponseDto> get(@PathVariable Long id) {
+        return ResponseEntity.ok(expenseService.get(id));
     }
 
     @PostMapping
-    @Operation(summary = "Добавить расход для пользователя")
-    public TransactionBaseResponseDto create(@Valid @RequestBody CreateTransactionBaseRequestDto expenseEntity) {
-        return expenseService.create(expenseEntity);
+    @Operation(summary = "api.expenses.create")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "api.expenses.create.success"),
+            @ApiResponse(responseCode = "400", description = "error.validation"),
+            @ApiResponse(responseCode = "401", description = "error.unauthorized"),
+            @ApiResponse(responseCode = "403", description = "error.forbidden"),
+            @ApiResponse(responseCode = "409", description = "error.conflict"),
+            @ApiResponse(responseCode = "405", description = "error.method.not.allowed"),
+            @ApiResponse(responseCode = "500", description = "error.internal.server")
+    })
+    public ResponseEntity<TransactionBaseResponseDto> create(@Valid @RequestBody CreateTransactionBaseRequestDto expenseEntity) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(expenseService.create(expenseEntity));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Удалить доход по идентификатору дохода")
-    public void delete(@PathVariable Long id) {
+    @Operation(summary = "api.expenses.delete")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "api.expenses.delete.success"),
+            @ApiResponse(responseCode = "401", description = "error.unauthorized"),
+            @ApiResponse(responseCode = "403", description = "error.forbidden"),
+            @ApiResponse(responseCode = "404", description = "api.expenses.not.found"),
+            @ApiResponse(responseCode = "405", description = "error.method.not.allowed"),
+            @ApiResponse(responseCode = "500", description = "error.internal.server")
+    })
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         expenseService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Изменить доход по идентификатору дохода")
-    public TransactionBaseResponseDto update(@PathVariable Long id, @Valid @RequestBody UpdateTransactionBaseRequestDto updateExpenseEntity) {
-        return expenseService.update(id, updateExpenseEntity);
+    @Operation(summary = "api.expenses.update")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "api.expenses.update.success"),
+            @ApiResponse(responseCode = "400", description = "error.validation"),
+            @ApiResponse(responseCode = "401", description = "error.unauthorized"),
+            @ApiResponse(responseCode = "403", description = "error.forbidden"),
+            @ApiResponse(responseCode = "404", description = "api.expenses.not.found"),
+            @ApiResponse(responseCode = "409", description = "error.conflict"),
+            @ApiResponse(responseCode = "405", description = "error.method.not.allowed"),
+            @ApiResponse(responseCode = "500", description = "error.internal.server")
+    })
+    public ResponseEntity<TransactionBaseResponseDto> update(@PathVariable Long id, @Valid @RequestBody UpdateTransactionBaseRequestDto updateExpenseEntity) {
+        return ResponseEntity.ok(expenseService.update(id, updateExpenseEntity));
     }
 
     @GetMapping
-    @Operation(summary = "Получить информацию о доходах пользователя")
-    public List<TransactionBaseResponseDto> getAllUserExpense() {
-        return expenseService.getAllUserExpenses();
+    @Operation(summary = "api.expenses.get.all")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "api.expenses.get.all.success"),
+            @ApiResponse(responseCode = "401", description = "error.unauthorized"),
+            @ApiResponse(responseCode = "403", description = "error.forbidden"),
+            @ApiResponse(responseCode = "405", description = "error.method.not.allowed"),
+            @ApiResponse(responseCode = "500", description = "error.internal.server")
+    })
+    public ResponseEntity<List<TransactionBaseResponseDto>> getAllUserExpense() {
+        return ResponseEntity.ok(expenseService.getAllUserExpenses());
     }
 }
