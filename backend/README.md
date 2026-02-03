@@ -39,11 +39,11 @@ This `docs` directory contains the complete HTTP API reference for this backend.
 
 #### 🔐 Authentication (`/api/auth`)
 
-| Method | Path              | Description                          |
-|--------|-------------------|--------------------------------------|
-| POST   | `/api/auth/login` | User login (session + remember-me)   |
-| POST   | `/api/auth/signup`| User registration + auto login       |
-| POST   | `/api/auth/logout`| Logout and invalidate session        |
+| Method | Path               | Description                        |
+|--------|--------------------|------------------------------------|
+| POST   | `/api/auth/login`  | User login (session + remember-me) |
+| POST   | `/api/auth/signup` | User registration + auto login     |
+| POST   | `/api/auth/logout` | Logout and invalidate session      |
 
 #### 💸 Expenses (`/api/expenses`)
 
