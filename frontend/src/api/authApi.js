@@ -1,4 +1,4 @@
-import env from '../../../env-config';
+import env from '../../env-config';
 const URL = env.BACKEND_URL;
 
 export function loginUser(username, password, rememberMe) {
