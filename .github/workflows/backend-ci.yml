@@ -1,0 +1,66 @@
+name: Backend CI Pipeline
+
+on:
+#  push:
+#    branches:
+#      - master
+#    paths:
+#      - 'backend/**'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/financial-backend
+
+jobs:
+  build-push:
+    name: Backend Test, Build & Push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Maven Test & Package
+        run: |
+          cd backend
+          mvn clean package
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+  deploy:
+    name: Deploy to Northflank (CI)
+    needs: build-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Northflank
+        uses: northflank/deploy-to-northflank@v1
+        with:
+          northflank-api-key: ${{ secrets.NORTHFLANK_API_TOKEN }}
+          project-id: ${{ secrets.NORTHFLANK_PROJECT_ID }}
+          service-id: ${{ secrets.NORTHFLANK_SERVICE_ID_CI }}
+          image-path: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
