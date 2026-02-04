@@ -1,69 +1,123 @@
-name: Production pipeline
+name: Production Pipeline
 
 on:
   workflow_dispatch:
+    inputs:
+      target:
+        description: 'What to deploy?'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - backend
+          - frontend
+          - both
+
+env:
+  REGISTRY: ghcr.io
 
 jobs:
-  build:
-    name: building application
+  backend-prod:
+    name: Backend Prod Build & Deploy
+    if: ${{ github.event.inputs.target == 'backend' || github.event.inputs.target == 'both' }}
     runs-on: ubuntu-latest
-    steps: 
-      - name: checkout repo
-        uses: actions/checkout@v4 #
+    permissions:
+      contents: read
+      packages: write
 
-      - name: setup java and maven
-        uses: actions/setup-java@v3 
-        with:
-           java-version: '21'
-           distribution: 'temurin'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - name: setup docker
-        uses: docker/setup-buildx-action@v3
-
-      - name: test app and database containers launch
-        run: docker compose -f docker-compose.yaml up -d
-
-      - name: run liquibase migrations dry-run
+      - name: Prepare Image Names
         run: |
-          cd migration
-          mvn -Plocal liquibase:update
-          
-  prod-deploy:
-    name: deploying onto northflank paas
+          echo "BACKEND_IMAGE=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')/financial-backend" >> $GITHUB_ENV
+          echo "FRONTEND_IMAGE=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')/financial-frontend" >> $GITHUB_ENV
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Maven Test & Package
+        run: |
+          cd backend
+          mvn clean package
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:prod
+            ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+
+      - name: Deploy to Northflank
+        uses: northflank/deploy-to-northflank@v1
+        with:
+          northflank-api-key: ${{ secrets.NORTHFLANK_API_TOKEN }}
+          project-id: ${{ secrets.NORTHFLANK_PROJECT_ID }}
+          service-id: ${{ secrets.NORTHFLANK_SERVICE_ID_PROD }}
+          image-path: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+
+  frontend-prod:
+    name: Frontend Prod Build & Deploy
+    if: ${{ github.event.inputs.target == 'frontend' || github.event.inputs.target == 'both' }}
     runs-on: ubuntu-latest
-    needs: build
-    steps: 
-      - name: install node.js
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Prepare Image Names
+        run: |
+          echo "BACKEND_IMAGE=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')/financial-backend" >> $GITHUB_ENV
+          echo "FRONTEND_IMAGE=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')/financial-frontend" >> $GITHUB_ENV
+
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: install northflank/cli
-        run: npm install -g @northflank/cli
-
-      - name: authenticate in cli
-        env:
-          NORTHFLANK_API_TOKEN: ${{ secrets.NORTHFLANK_API_TOKEN }}
-        run: northflank login --token $NORTHFLANK_API_TOKEN
-
-      - name: trigger build and deploy
-        env:
-          PROJECT_NAME: financial-control-app
-          SERVICE_NAME: financial-control-backend-prod
-          NORTHFLANK_API_TOKEN: ${{ secrets.NORTHFLANK_API_TOKEN }}
+      - name: NPM install and build
         run: |
-          echo "🔁 Triggering Northflank build for $PROJECT_NAME/$SERVICE_NAME..."
-          curl --fail --silent --show-error \
-            --header "Content-Type: application/json" \
-            --header "Authorization: Bearer $NORTHFLANK_API_TOKEN" \
-            --request POST \
-            https://api.northflank.com/v1/projects/$PROJECT_NAME/services/$SERVICE_NAME/build
-          echo "✅ Build triggered successfully."
+          cd frontend
+          npm ci
+          npm run build
 
-      - name: checkout repo
-        uses: actions/checkout@v4 #
-      
-      - name: run liquibase migrations
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:prod
+            ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+
+      - name: Trigger Render deploy
+        env:
+          deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL_PROD }}
         run: |
-          cd migration
-          mvn -Pproduction liquibase:update
+          curl "$deploy_url"
