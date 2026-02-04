@@ -1,11 +1,11 @@
 name: Backend CI Pipeline
 
 on:
-#  push:
-#    branches:
-#      - master
-#    paths:
-#      - 'backend/**'
+  push:
+    branches:
+      - master
+    paths:
+      - 'backend/**'
   workflow_dispatch:
 
 env:
