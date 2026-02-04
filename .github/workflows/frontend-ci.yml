@@ -1,0 +1,73 @@
+name: Frontend CI Pipeline
+
+on:
+#  push:
+#    branches:
+#      - master
+#    paths:
+#      - 'frontend/**'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-push:
+    name: Frontend Build & Push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Prepare Image Name
+        run: |
+          echo "IMAGE_NAME=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')/financial-frontend" >> $GITHUB_ENV
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: NPM install and build
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+#  deploy:
+#    name: Deploy to Render (CI)
+#    needs: build-push
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Trigger Render Deploy
+#        run: |
+#          echo "🚀 Triggering Render deploy via API..."
+#          curl --request POST \
+#            --url https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID_CI }}/deploys \
+#            --header 'accept: application/json' \
+#            --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
+#            --header 'content-type: application/json' \
+#            --data '{"clearCache": "do_not_clear"}'
+#          echo "✅ Deploy triggered successfully."
