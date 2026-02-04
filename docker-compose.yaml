@@ -18,6 +18,7 @@ services:
       LOG_LEVEL: ${LOG_LEVEL?}
       FRONTEND_URL: ${FRONTEND_URL?}
       ACTUATOR_ENDPOINTS: ${ACTUATOR_ENDPOINTS?}
+      API_DOCS_ENABLED: ${API_DOCS_ENABLED?}
     depends_on:
       - postgres
   frontend:
