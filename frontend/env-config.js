@@ -1,5 +1,5 @@
 const env = {
-  BACKEND_URL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:8484',
+  BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
 };
 
 export default env;
