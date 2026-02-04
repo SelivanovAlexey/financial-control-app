@@ -1,4 +1,5 @@
-const URL = 'http://localhost:8484';
+import env from '../../../env-config';
+const URL = env.BACKEND_URL;
 
 export function loginUser(username, password, rememberMe) {
   return fetch(`${URL}/api/auth/login`, {

@@ -29,7 +29,7 @@ export const userSignUp = createAsyncThunk(
   'user/signUpUser',
   async (data) => {
     const response = await signUpUser(data.username, data.password, data.confirmPassword, data.email);
-    if (response.status === 200) {
+    if (response.status === 200 || response.status === 201) {
       return response.data;
     } else {
       throw new Error(response.headers.get('error'));
