@@ -1,4 +1,5 @@
-import env from '../../env-config';
+import { getPublicEnv } from '../../public-env';
+const env = getPublicEnv();
 const URL = env.BACKEND_URL;
 
 export function loginUser(username, password, rememberMe) {
