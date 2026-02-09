@@ -17,7 +17,7 @@ export default function SignUp() {
     const [values, setValues] = useState({username: '', email: '', password: '', confirmPassword: '' });
     const [loading, setLoading] = useState(false);
     const dispatch = useDispatch();
-    const { isAuthenticated, status, error } = useSelector(state => state.user);
+    const { isAuthenticated, error } = useSelector(state => state.user);
     
     const validateEmail = (email) =>
         !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -149,7 +149,7 @@ export default function SignUp() {
         } finally {
             setLoading(false);
         }
-    };
+    }
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -248,7 +248,7 @@ export default function SignUp() {
                 <Divider style={{width: "100%", backgroundColor: "#303030"}}/>
                 <div style={{display: "flex", gap: 10, flexDirection: "row", alignItems: "center"}}>
                     <Typography variant="h6" style={{fontSize: 16}}>Уже есть аккаунт?</Typography>
-                    <Typography className={styles.link} variant="h7">
+                    <Typography className={styles.link} variant="body2">
                         <Link href="/login">Войти</Link>
                     </Typography>
                 </div>

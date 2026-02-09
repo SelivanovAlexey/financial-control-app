@@ -67,7 +67,7 @@ export default function ForgotPassword() {
                             <Divider style={{width: "100%", backgroundColor: "#303030"}}/>
                             <div style={{display: "flex", gap: 10, flexDirection: "row", alignItems: "center"}}>
                                 <Typography variant="h6" style={{fontSize: 16}}>Уже есть аккаунт?</Typography>
-                                <Typography className={styles.link} variant="h7"><Link href="/login">Войти</Link></Typography>
+                                <Typography className={styles.link} variant="body2"><Link href="/login">Войти</Link></Typography>
                             </div>
                         </CardContent>
                     </Card>

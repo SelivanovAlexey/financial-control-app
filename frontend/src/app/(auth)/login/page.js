@@ -80,12 +80,12 @@ export default function Login() {
                             </form>
                             <div style={{display: "flex", gap: 10, flexDirection: "row", alignItems: "center"}}>
                                 <FormControlLabel control={<Checkbox checked={checked} onChange={(e) => setChecked(e.target.checked)} color="success"/>} label="Запомнить меня" />
-                                <Typography className={styles.link} variant="h7"><Link  href="/forgot-password">Забыли пароль?</Link></Typography>
+                                <Typography className={styles.link} variant="body2"><Link  href="/forgot-password">Забыли пароль?</Link></Typography>
                             </div>
                             <Divider style={{width: "100%", backgroundColor: "#303030"}}/>
                             <div style={{display: "flex", gap: 10, flexDirection: "row", alignItems: "center"}}>
                                 <Typography variant="h6" style={{fontSize: 16}}>Нет аккаунта?</Typography>
-                                <Typography className={styles.link} variant="h7"><Link href="/sign-up">Зарегистрироваться</Link></Typography>
+                                <Typography className={styles.link} variant="body2"><Link href="/sign-up">Зарегистрироваться</Link></Typography>
                             </div>
                         </CardContent>
                     </Card>

@@ -1,9 +1,5 @@
-import { getPublicEnv } from '../../public-env';
-const env = getPublicEnv();
-const URL = env.BACKEND_URL;
-
 export function loginUser(username, password, rememberMe) {
-  return fetch(`${URL}/api/auth/login`, {
+  return fetch(`/api/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -14,7 +10,7 @@ export function loginUser(username, password, rememberMe) {
 }
 
 export function logoutUser () {
-    return fetch(`${URL}/api/auth/logout`, {
+    return fetch(`/api/auth/logout`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -24,7 +20,7 @@ export function logoutUser () {
 }
 
 export function signUpUser (username, password, confirmPassword, email) {
-    return fetch(`${URL}/api/auth/signup`, {
+    return fetch(`/api/auth/signup`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -35,21 +31,21 @@ export function signUpUser (username, password, confirmPassword, email) {
 }
 
 export function getAllExpenses () {
-    return fetch(`${URL}/api/expenses`, {
+    return fetch(`/api/expenses`, {
         method: 'GET',
         credentials: 'include',
     })
 }
 
 export function getAllIncomes () {
-    return fetch(`${URL}/api/incomes`, {
+    return fetch(`/api/incomes`, {
         method: 'GET',
         credentials: 'include',
     })
 }
 
 export function createExpense (data) {
-    return fetch(`${URL}/api/expenses`, {
+    return fetch(`/api/expenses`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -60,7 +56,7 @@ export function createExpense (data) {
 }
 
 export function createIncome (data) {
-    return fetch(`${URL}/api/incomes`, {
+    return fetch(`/api/incomes`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -71,14 +67,14 @@ export function createIncome (data) {
 }
 
 export function deleteExpense (id) {
-    return fetch(`${URL}/api/expenses/${id}`, {
+    return fetch(`/api/expenses/${id}`, {
         method: 'DELETE',
         credentials: 'include',
     })
 }
 
 export function deleteIncome (id) {
-    return fetch(`${URL}/api/incomes/${id}`, {
+    return fetch(`/api/incomes/${id}`, {
         method: 'DELETE',
         credentials: 'include',
     })
