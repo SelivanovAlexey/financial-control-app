@@ -48,7 +48,7 @@ public class SecurityConfig {
     @Value("${authentication.remember-me.expiration}")
     private Integer rememberMeExp;
 
-    @Value("${cors.allowed-origins:*}")
+    @Value("${cors.allowed-origins}")
     private String corsAllowedOrigins;
 
     @Bean
@@ -79,6 +79,9 @@ public class SecurityConfig {
                                 .resolveException(request, response, null, authException))
                         .accessDeniedHandler((request, response, accessDeniedException) -> handlerExceptionResolver
                                 .resolveException(request, response, null, accessDeniedException)))
+                .sessionManagement(session -> session
+                        .sessionFixation().migrateSession()
+                )
                 .build();
     }
 

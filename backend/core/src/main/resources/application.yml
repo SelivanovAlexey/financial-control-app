@@ -5,6 +5,7 @@ authentication:
 
 server:
   port: 8484
+  forward-headers-strategy: native
 spring:
   application:
     name: financial-control
