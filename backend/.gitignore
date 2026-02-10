@@ -154,3 +154,4 @@ README.html
 *.iml
 .idea
 .exercism
+/misc

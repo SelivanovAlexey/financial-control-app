@@ -24,7 +24,12 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.HandlerExceptionResolver;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -41,6 +46,9 @@ public class SecurityConfig {
 
     @Value("${authentication.remember-me.expiration}")
     private Integer rememberMeExp;
+
+    @Value("${cors.allowed-origins:*}")
+    private String corsAllowedOrigins;
 
     @Bean
     public SecurityFilterChain sessionBasedAuthFilterChain(HttpSecurity http) throws Exception {
@@ -120,5 +128,18 @@ public class SecurityConfig {
             servletContext.getSessionCookieConfig().setSecure(true);
             servletContext.getSessionCookieConfig().setHttpOnly(true);
         };
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of(corsAllowedOrigins.split(",")));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }
