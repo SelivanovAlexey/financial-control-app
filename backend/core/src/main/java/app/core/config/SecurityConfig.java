@@ -3,6 +3,7 @@ package app.core.config;
 import app.core.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -109,6 +110,15 @@ public class SecurityConfig {
                 new TokenBasedRememberMeServices(rememberMeKey, userService);
         rememberMeServices.setAlwaysRemember(true);
         rememberMeServices.setTokenValiditySeconds(rememberMeExp);
+        rememberMeServices.setUseSecureCookie(true);
         return rememberMeServices;
+    }
+
+    @Bean
+    public ServletContextInitializer servletContextInitializer() {
+        return servletContext -> {
+            servletContext.getSessionCookieConfig().setSecure(true);
+            servletContext.getSessionCookieConfig().setHttpOnly(true);
+        };
     }
 }
