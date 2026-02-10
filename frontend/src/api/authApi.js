@@ -1,81 +1,32 @@
-export function loginUser(username, password, rememberMe) {
-  return fetch(`/api/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ username, password, rememberMe }),
-    credentials: 'include',
-  });
-}
+import { apiClient } from './apiClient';
 
-export function logoutUser () {
-    return fetch(`/api/auth/logout`, {
+/**
+ * AUTH
+ */
+export const loginUser = (username, password, rememberMe) =>
+    apiClient('/auth/login', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-    })
-}
-
-export function signUpUser (username, password, confirmPassword, email) {
-    return fetch(`/api/auth/signup`, {
+        body: { username, password, rememberMe }
+    });
+export const logoutUser = () =>
+    apiClient('/auth/logout', { method: 'POST' });
+export const signUpUser = (username, password, confirmPassword, email) =>
+    apiClient('/auth/signup', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password, confirmPassword, email }),
-        credentials: 'include',
-    })
-}
-
-export function getAllExpenses () {
-    return fetch(`/api/expenses`, {
-        method: 'GET',
-        credentials: 'include',
-    })
-}
-
-export function getAllIncomes () {
-    return fetch(`/api/incomes`, {
-        method: 'GET',
-        credentials: 'include',
-    })
-}
-
-export function createExpense (data) {
-    return fetch(`/api/expenses`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-        credentials: 'include',
-    })
-}
-
-export function createIncome (data) {
-    return fetch(`/api/incomes`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-        credentials: 'include',
-    })
-}
-
-export function deleteExpense (id) {
-    return fetch(`/api/expenses/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-    })
-}
-
-export function deleteIncome (id) {
-    return fetch(`/api/incomes/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-    })
-}
+        body: { username, password, confirmPassword, email }
+    });
+/**
+ * EXPENSES & INCOMES
+ */
+export const getAllExpenses = () =>
+    apiClient('/expenses');
+export const getAllIncomes = () =>
+    apiClient('/incomes');
+export const createExpense = (data) =>
+    apiClient('/expenses', { method: 'POST', body: data });
+export const createIncome = (data) =>
+    apiClient('/incomes', { method: 'POST', body: data });
+export const deleteExpense = (id) =>
+    apiClient(`/expenses/${id}`, { method: 'DELETE' });
+export const deleteIncome = (id) =>
+    apiClient(`/incomes/${id}`, { method: 'DELETE' });

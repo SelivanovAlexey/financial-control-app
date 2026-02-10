@@ -1,5 +1,6 @@
 package app.core.config;
 
+import app.core.config.helpers.SpaCsrfTokenRequestHandler;
 import app.core.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,16 +15,16 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.csrf.*;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -54,19 +55,19 @@ public class SecurityConfig {
     public SecurityFilterChain sessionBasedAuthFilterChain(HttpSecurity http) throws Exception {
         return http
                 .cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(this::csrfConfigurer)
                 .authenticationProvider(authenticationProvider(true))
                 .securityContext(context -> context.securityContextRepository(securityContextRepository()))
                 .requestCache(RequestCacheConfigurer::disable)
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/internal/**").permitAll()
-                        .requestMatchers("/scalar/**","/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**", "/webjars/**", "/favicon/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/scalar/**", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs",
+                                "/v3/api-docs/**", "/webjars/**", "/favicon/**", "/error*")
+                        .permitAll()
+                        .anyRequest().authenticated())
                 .rememberMe(remember -> remember
-                        .rememberMeServices(rememberMeServices())
-                )
+                        .rememberMeServices(rememberMeServices()))
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .invalidateHttpSession(true)
@@ -74,8 +75,10 @@ public class SecurityConfig {
                         .logoutSuccessHandler(logoutSuccessHandler())
                         .deleteCookies("JSESSIONID"))
                 .exceptionHandling(e -> e
-                        .authenticationEntryPoint(authenticationEntryPoint())
-                )
+                        .authenticationEntryPoint((request, response, authException) -> handlerExceptionResolver
+                                .resolveException(request, response, null, authException))
+                        .accessDeniedHandler((request, response, accessDeniedException) -> handlerExceptionResolver
+                                .resolveException(request, response, null, accessDeniedException)))
                 .build();
     }
 
@@ -90,7 +93,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(@Value("${authentication.hide-usernotfound-exceptions:true}") boolean hideUserNotFoundExceptions) {
+    public AuthenticationProvider authenticationProvider(
+            @Value("${authentication.hide-usernotfound-exceptions:true}") boolean hideUserNotFoundExceptions) {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userService);
         authenticationProvider.setPasswordEncoder(bCryptPasswordEncoder);
@@ -107,15 +111,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationEntryPoint authenticationEntryPoint() {
-        return (request, response, exception) ->
-                handlerExceptionResolver.resolveException(request, response, null, exception);
-    }
-
-    @Bean
     public RememberMeServices rememberMeServices() {
-        TokenBasedRememberMeServices rememberMeServices =
-                new TokenBasedRememberMeServices(rememberMeKey, userService);
+        TokenBasedRememberMeServices rememberMeServices = new TokenBasedRememberMeServices(rememberMeKey, userService);
         rememberMeServices.setAlwaysRemember(true);
         rememberMeServices.setTokenValiditySeconds(rememberMeExp);
         rememberMeServices.setUseSecureCookie(true);
@@ -127,6 +124,7 @@ public class SecurityConfig {
         return servletContext -> {
             servletContext.getSessionCookieConfig().setSecure(true);
             servletContext.getSessionCookieConfig().setHttpOnly(true);
+            servletContext.getSessionCookieConfig().setAttribute("SameSite", "Strict");
         };
     }
 
@@ -141,5 +139,17 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
+    }
+
+    @Bean
+    public CsrfConfigurer<HttpSecurity> csrfConfigurer(CsrfConfigurer<HttpSecurity> csrf) {
+        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        repository.setCookieCustomizer(cookie -> cookie
+                .secure(true)
+                .sameSite("Strict")
+        );
+        csrf.csrfTokenRepository(repository);
+        csrf.csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler());
+        return csrf;
     }
 }
