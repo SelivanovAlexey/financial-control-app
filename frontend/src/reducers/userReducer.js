@@ -6,7 +6,7 @@ export const userLogin = createAsyncThunk(
   async (data) => {
     const response = await loginUser(data.username, data.password, data.rememberMe);
     if (response.status === 200) {
-      return response.data;
+      return {}; // Backend returns empty body for login
     } else {
       throw new Error('Failed to login');
     }
@@ -18,7 +18,7 @@ export const userLogout = createAsyncThunk(
   async () => {
     const response = await logoutUser();
     if (response.status === 200) {
-      return response.data;
+      return {}; // Backend returns empty body for logout
     } else {
       throw new Error('Failed to logout');
     }
@@ -30,7 +30,7 @@ export const userSignUp = createAsyncThunk(
   async (data) => {
     const response = await signUpUser(data.username, data.password, data.confirmPassword, data.email);
     if (response.status === 200 || response.status === 201) {
-      return response.data;
+      return {}; // Backend returns empty body for signup
     } else {
       throw new Error(response.headers.get('error'));
     }
@@ -42,11 +42,11 @@ export const fetchExpenses = createAsyncThunk(
   async (_, { signal, rejectWithValue }) => {
     try {
       const response = await getAllExpenses();
-      
+
       if (signal.aborted) {
         throw new Error('Request aborted');
       }
-      
+
       if (response.ok) {
         const data = await response.json();
         return data;
@@ -70,11 +70,11 @@ export const fetchIncomes = createAsyncThunk(
   async (_, { signal, rejectWithValue }) => {
     try {
       const response = await getAllIncomes();
-      
+
       if (signal.aborted) {
         throw new Error('Request aborted');
       }
-      
+
       if (response.ok) {
         const data = await response.json();
         return data;
@@ -97,7 +97,7 @@ export const fetchCreateExpense = createAsyncThunk(
   'expense/createExpense',
   async (data) => {
     const response = await createExpense(data);
-    
+
     if (response.ok) {
       const result = await response.json();
       return result;
@@ -112,7 +112,7 @@ export const fetchCreateIncome = createAsyncThunk(
   'income/createIncome',
   async (data) => {
     const response = await createIncome(data);
-    
+
     if (response.ok) {
       const result = await response.json();
       return result;
@@ -127,7 +127,7 @@ export const fetchDeleteExpense = createAsyncThunk(
   'expense/deleteExpense',
   async (id) => {
     const response = await deleteExpense(id);
-    
+
     if (response.ok) {
       const result = await response.json();
       return result;
@@ -141,7 +141,7 @@ export const fetchDeleteIncome = createAsyncThunk(
   'income/deleteIncome',
   async (id) => {
     const response = await deleteIncome(id);
-    
+
     if (response.ok) {
       const result = await response.json();
       return result;
@@ -157,11 +157,11 @@ export const checkAuth = createAsyncThunk(
     try {
       // Пробуем загрузить расходы - если получится, значит авторизован
       const result = await dispatch(fetchExpenses()).unwrap();
-      
+
       // Если запрос прошел без ошибок - авторизован
-      return { 
+      return {
         isAuthenticated: true,
-        initialExpenses: result 
+        initialExpenses: result
       };
     } catch (error) {
       // Если ошибка 401 или другая - не авторизован
@@ -194,6 +194,7 @@ const userSlice = createSlice({
       state.expenses = [];
       state.incomes = [];
       state.userError = null;
+      state.isLoading = false;
     }
   },
   extraReducers: (builder) => {
@@ -216,7 +217,7 @@ const userSlice = createSlice({
         state.userError = action.error.message || 'Authorization failed.';
         state.isLoading = false;
       })
-      
+
       .addCase(userLogout.pending, (state) => {
         state.userRequest = true;
         state.userError = null;
@@ -233,7 +234,7 @@ const userSlice = createSlice({
         state.userRequest = false;
         state.userError = action.error.message || 'Logout failed.';
       })
-      
+
       .addCase(userSignUp.pending, (state) => {
         state.userRequest = true;
         state.userError = null;
@@ -252,7 +253,7 @@ const userSlice = createSlice({
         state.userError = action.error.message || 'Registration failed.';
         state.isLoading = false;
       })
-      
+
       .addCase(fetchExpenses.pending, (state) => {
         state.isLoading = true;
         state.userError = null;
@@ -264,10 +265,13 @@ const userSlice = createSlice({
       })
       .addCase(fetchExpenses.rejected, (state, action) => {
         state.isLoading = false;
-        state.userError = action.error.message || 'Failed to fetch expenses';
-        if (action.error.message === 'Unauthorized') {
+        const errorMessage = action.payload || action.error.message;
+        if (errorMessage === 'Unauthorized') {
           state.isAuthenticated = false;
           state.expenses = [];
+          state.userError = null;
+        } else {
+          state.userError = errorMessage || 'Failed to fetch expenses';
         }
       })
 
@@ -282,10 +286,13 @@ const userSlice = createSlice({
       })
       .addCase(fetchIncomes.rejected, (state, action) => {
         state.isLoading = false;
-        state.userError = action.error.message || 'Failed to fetch incomes';
-        if (action.error.message === 'Unauthorized') {
+        const errorMessage = action.payload || action.error.message;
+        if (errorMessage === 'Unauthorized') {
           state.isAuthenticated = false;
           state.incomes = [];
+          state.userError = null;
+        } else {
+          state.userError = errorMessage || 'Failed to fetch incomes';
         }
       })
 
@@ -296,18 +303,19 @@ const userSlice = createSlice({
       .addCase(fetchCreateExpense.fulfilled, (state, action) => {
         const formDate = action.meta.arg.createDate;
         const timestampFromForm = Math.floor(new Date(formDate).getTime() / 1000);
-        
+
         const expenseWithCorrectDate = {
           ...action.payload,
           createDate: timestampFromForm
         };
-        
+
         state.expenses.push(expenseWithCorrectDate);
         state.userError = null;
         state.isLoading = false;
       })
       .addCase(fetchCreateExpense.rejected, (state, action) => {
         state.userError = action.error.message || 'Failed to create expense';
+        state.isLoading = false;
       })
 
       .addCase(fetchCreateIncome.pending, (state) => {
@@ -317,23 +325,24 @@ const userSlice = createSlice({
       .addCase(fetchCreateIncome.fulfilled, (state, action) => {
         const formDate = action.meta.arg.createDate;
         const timestampFromForm = Math.floor(new Date(formDate).getTime() / 1000);
-        
+
         const incomeWithCorrectDate = {
           ...action.payload,
           createDate: timestampFromForm
         };
-        
+
         state.incomes.push(incomeWithCorrectDate);
         state.userError = null;
         state.isLoading = false;
       })
       .addCase(fetchCreateIncome.rejected, (state, action) => {
         state.userError = action.error.message || 'Failed to create income';
+        state.isLoading = false;
       })
 
       .addCase(checkAuth.pending, (state) => {
-    state.isLoading = true;
-    state.userError = null;
+        state.isLoading = true;
+        state.userError = null;
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
         state.isAuthenticated = true;

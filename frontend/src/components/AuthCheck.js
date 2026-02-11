@@ -10,7 +10,7 @@ const AuthCheck = ({ children }) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { isAuthenticated, isAuthChecked, isLoading } = useSelector((state) => state.user);
-  
+
   // Refs для отслеживания состояния
   const initStarted = useRef(false);
   const dataLoadStarted = useRef(false);
@@ -21,7 +21,7 @@ const AuthCheck = ({ children }) => {
     // Защита от повторных вызовов
     if (initStarted.current) return;
     initStarted.current = true;
-    
+
     dispatch(checkAuth());
   }, [dispatch]);
 
@@ -29,7 +29,7 @@ const AuthCheck = ({ children }) => {
   useEffect(() => {
     // Пропускаем если проверка еще не завершена
     if (!isAuthChecked) return;
-    
+
     // Пропускаем если уже пытались редиректить
     if (redirectAttempted.current) return;
 
@@ -38,12 +38,21 @@ const AuthCheck = ({ children }) => {
       router.push('/login');
       return;
     }
-    
+
     // Если авторизован - начинаем загрузку данных
     if (isAuthenticated && !dataLoadStarted.current) {
       dataLoadStarted.current = true;
     }
   }, [isAuthenticated, isAuthChecked, router, dispatch]);
+
+  // Пока идет проверка — показываем лоадер
+  if (!isAuthChecked) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   // Если не авторизован (но проверка завершена) - ничего не показываем
   if (!isAuthenticated) {
