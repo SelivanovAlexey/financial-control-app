@@ -14,16 +14,14 @@ It exposes HTTP endpoints for authentication, user profiles, and per-user income
                                                      | Global Error Handling (JSON)
 ```
 
-### 🧩 Backend Overview
-
-- **Responsibilities**
-  - Session-based authentication with optional remember-me
-  - User profile + per-user incomes and expenses (CRUD)
-  - Unified validation and JSON error responses
-
-- **Environments & Migrations**
-  - Runs in multiple environments (local, CI, prod) via Docker/Spring profiles
-  - Schema changes managed by Liquibase migrations, applied automatically or via pipeline
+### 🧩 Features
+- Session-based authentication with a “Remember Me” option
+- User profile + income and expenses (CRUD)
+- Validation and error handling
+- Localization (EN + RU)
+- Support for multiple environments (local, CI, prod)
+- Docker Compose for local development
+- Liquibase migrations integrated into the Spring context
 
 This `docs` directory contains the complete HTTP API reference for this backend.
 

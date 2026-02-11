@@ -22,16 +22,12 @@ Personal finance management web application.
 
 ## 📋 Overview
 
-Financial Control App is a comprehensive personal finance management system that helps users track their expenses, manage budgets, and gain insights into their spending habits.
+Financial Control App is a comprehensive personal finance management system that helps users track expenses, manage budgets, and analyze their spending.
 
-The application provides a modern web interface for:
+The application provides a web interface for:
 - Recording daily expenses and income
-- Categorizing transactions
-- Viewing financial reports and analytics
-- Managing user accounts securely
-
-Built with modern technologies, it ensures reliable performance, security, and scalability.
-
+- Viewing transaction history and categorizing transactions
+- Secure account management
 ## 🏗️ Architecture
 
 The application consists of three main components:
