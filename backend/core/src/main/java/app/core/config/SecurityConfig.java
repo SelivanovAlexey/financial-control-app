@@ -62,11 +62,11 @@ public class SecurityConfig {
                 .securityContext(context -> context.securityContextRepository(securityContextRepository()))
                 .requestCache(RequestCacheConfigurer::disable)
                 .authorizeHttpRequests(req -> req
+                        .requestMatchers("/").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/internal/**").permitAll()
-                        .requestMatchers("/scalar/**", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs",
-                                "/v3/api-docs/**", "/webjars/**", "/favicon/**", "/error*")
-                        .permitAll()
+                        .requestMatchers("/scalar/**", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**", "/webjars/**").permitAll()
+                        .requestMatchers("/favicon.ico", "/favicon.svg", "/logo.png", "/error*").permitAll()
                         .anyRequest().authenticated())
                 .rememberMe(remember -> remember
                         .rememberMeServices(rememberMeServices()))
@@ -81,8 +81,7 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, accessDeniedException) -> handlerExceptionResolver
                                 .resolveException(request, response, null, accessDeniedException)))
                 .sessionManagement(session -> session
-                        .sessionFixation().migrateSession()
-                )
+                        .sessionFixation().migrateSession())
                 .build();
     }
 
@@ -113,6 +112,7 @@ public class SecurityConfig {
         logoutHandler.setClearAuthentication(true);
         return logoutHandler;
     }
+
     @Bean
     public CookieClearingLogoutHandler cookieClearingLogoutHandler() {
         return new CookieClearingLogoutHandler("JSESSIONID", "remember-me", "XSRF-TOKEN");
@@ -162,8 +162,7 @@ public class SecurityConfig {
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         repository.setCookieCustomizer(cookie -> cookie
                 .secure(true)
-                .sameSite("Strict")
-        );
+                .sameSite("Strict"));
         csrf.csrfTokenRepository(repository);
         csrf.csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler());
         return csrf;
