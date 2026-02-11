@@ -20,7 +20,9 @@ import org.springframework.security.config.annotation.web.configurers.RequestCac
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -70,10 +72,9 @@ public class SecurityConfig {
                         .rememberMeServices(rememberMeServices()))
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
                         .logoutSuccessHandler(logoutSuccessHandler())
-                        .deleteCookies("JSESSIONID"))
+                        .addLogoutHandler(securityContextLogoutHandler())
+                        .addLogoutHandler(cookieClearingLogoutHandler()))
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint((request, response, authException) -> handlerExceptionResolver
                                 .resolveException(request, response, null, authException))
@@ -103,6 +104,18 @@ public class SecurityConfig {
         authenticationProvider.setPasswordEncoder(bCryptPasswordEncoder);
         authenticationProvider.setHideUserNotFoundExceptions(hideUserNotFoundExceptions);
         return authenticationProvider;
+    }
+
+    @Bean
+    public SecurityContextLogoutHandler securityContextLogoutHandler() {
+        SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
+        logoutHandler.setInvalidateHttpSession(true);
+        logoutHandler.setClearAuthentication(true);
+        return logoutHandler;
+    }
+    @Bean
+    public CookieClearingLogoutHandler cookieClearingLogoutHandler() {
+        return new CookieClearingLogoutHandler("JSESSIONID", "remember-me", "XSRF-TOKEN");
     }
 
     @Bean

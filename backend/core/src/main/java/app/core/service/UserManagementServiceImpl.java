@@ -82,11 +82,6 @@ public class UserManagementServiceImpl implements UserManagementService {
         userMapper.updateUserFromRequest(userToUpdate, userEntity, passwordEncoder);
         UserEntity savedUser = userRepository.save(userEntity);
 
-        if (userToUpdate.password() != null) {
-            securityProvider.updateAuthenticationInSecurityContext(userEntity);
-            log.debug("Password changed for user {}", userEntity.getUsername());
-        }
-
         log.debug("User {} successfully updated", userEntity.getId());
         return userMapper.toResponse(savedUser);
     }

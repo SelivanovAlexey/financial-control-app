@@ -200,7 +200,7 @@ class UserManagementServiceImplUnitTest {
         verify(securityProvider).checkAccess(testUser.getId(), testUser.getId());
         verify(userMapper).updateUserFromRequest(updateRequest, testUser, passwordEncoder);
         verify(userRepository).save(testUser);
-        verify(securityProvider).updateAuthenticationInSecurityContext(testUser);
+        //TODO: verify(securityProvider).logout(testUser);
     }
 
     @Order(6)
@@ -442,7 +442,7 @@ class UserManagementServiceImplUnitTest {
         assertThat(result).isEqualTo(expectedResponse);
         verify(userMapper).updateUserFromRequest(updateRequest, existingUser, passwordEncoder);
         verify(userRepository).save(existingUser);
-        verify(securityProvider).updateAuthenticationInSecurityContext(existingUser);
+        //TODO: verify(securityProvider).logout(testUser);
         verify(securityProvider).getUserFromSecurityContext();
     }
 
