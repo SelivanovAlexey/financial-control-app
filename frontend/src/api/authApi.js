@@ -22,6 +22,8 @@ export const getAllExpenses = () =>
     apiClient('/expenses');
 export const getAllIncomes = () =>
     apiClient('/incomes');
+export const getCurrentUser = () =>
+    apiClient('/users/me');
 export const createExpense = (data) =>
     apiClient('/expenses', { method: 'POST', body: data });
 export const createIncome = (data) =>

@@ -40,15 +40,16 @@ export default function History() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [selectOpen, setSelectOpen] = useState(false);
 
   
   useEffect(() => {
-    if (!dataCheckedRef.current && expenses.length === 0 && incomes.length === 0) {
-      dispatch(fetchExpenses());
-      dispatch(fetchIncomes());
-    }
-    dataCheckedRef.current = true;
-  }, [dispatch, expenses.length, incomes.length]);
+  if (!dataCheckedRef.current) {
+    dispatch(fetchExpenses());
+    dispatch(fetchIncomes()); // Загружаем ОБОИ при первом запуске
+  }
+  dataCheckedRef.current = true;
+}, []);
 
   const sortedRows = React.useMemo(() => {
     const allTransactions = [];
@@ -156,27 +157,50 @@ export default function History() {
   };
 
   const handleFilterChange = (value) => {
-    setFilter(value);
-    if (value === 'all') {
-      dispatch(fetchExpenses());
-      dispatch(fetchIncomes());
-    } else if (value === 'expenses') {
-      dispatch(fetchExpenses());
-    } else if (value === 'incomes') {
-      dispatch(fetchIncomes());
-    }
-  };
-
-  // const handleEdit = (id, dataType) => {
-  //   console.log(`Редактирование операции ${dataType} с ID: ${id}`);
-  //   // Реализация редактирования
-  // };
+  setFilter(value);
+  setSelectOpen(false);
+  
+  if (value === 'all') {
+    dispatch(fetchExpenses());
+    dispatch(fetchIncomes()); // Загружаем оба типа при "Все"
+  } else if (value === 'expenses') {
+    dispatch(fetchExpenses());
+  } else if (value === 'incomes') {
+    dispatch(fetchIncomes());
+  }
+};
 
   if (isLoading) {
     return (
-      <div className={styles.table_container}>
-        <div className={styles.history_title}>История операций</div>
-        <div style={{ color: "var(--font-color)", textAlign: "center", padding: "2rem" }}>
+      <div className={styles.history_container}>
+        <div className={styles.history_title}>
+          <div className={styles.history_title_text}>История операций</div>
+          <div className={styles.history_title_filter}>
+            <Select
+              open={selectOpen}
+              onOpenChange={setSelectOpen}
+              variant="underlined"
+              style={{ 
+                width: "100%", 
+                background: "var(--background)", 
+                color: "var(--font-color)", 
+                fontSize: "calc(8px + 1vh)"
+              }}
+              suffixIcon={
+                <DownOutlined style={{ color: "var(--main-color)" }} />
+              }
+              value={filter}
+              options={filterOptions}
+              onChange={handleFilterChange}
+              popupRender={menu => (
+                <div className={styles.select_menu}>
+                  {menu}
+                </div>
+              )}
+            />
+          </div>
+        </div>
+        <div className={styles.history_list} style={{ color: "var(--font-color)", textAlign: "center", padding: "2rem" }}>
           Загрузка...
         </div>
       </div>
@@ -185,8 +209,32 @@ export default function History() {
 
   if (userError) {
     return (
-      <div className={styles.table_container}>
+      <div className={styles.history_container}>
         <div className={styles.history_title}>История операций</div>
+        <div className={styles.history_title_filter}>
+            <Select
+              open={selectOpen}
+              onOpenChange={setSelectOpen}
+              variant="underlined"
+              style={{ 
+                width: "100%", 
+                background: "var(--background)", 
+                color: "var(--font-color)", 
+                fontSize: "calc(8px + 1vh)"
+              }}
+              suffixIcon={
+                <DownOutlined style={{ color: "var(--main-color)" }} />
+              }
+              value={filter}
+              options={filterOptions}
+              onChange={handleFilterChange}
+              popupRender={menu => (
+                <div className={styles.select_menu}>
+                  {menu}
+                </div>
+              )}
+            />
+          </div>
         <div style={{ color: "var(--red-color)", textAlign: "center", padding: "2rem" }}>
           Ошибка: {userError}
         </div>
@@ -201,6 +249,8 @@ export default function History() {
           <div className={styles.history_title_text}>История операций</div>
           <div className={styles.history_title_filter}>
             <Select
+              open={selectOpen}
+              onOpenChange={setSelectOpen}
               variant="underlined"
               style={{ 
                 width: "100%", 
@@ -302,7 +352,7 @@ export default function History() {
               expandIconPlacement="start"
               expandIcon={({ isActive }) => (
                 <div style={{
-                  paddingTop: '26px',
+                  paddingTop: '28px',
                 }}>
                   <RightOutlined 
                     rotate={isActive ? 90 : 0}
@@ -329,8 +379,8 @@ export default function History() {
                     <div className={styles.collapse_icon}>
                       <Avatar 
                         shape="square" 
-                        style={{borderRadius: "10px"}} 
-                        size={40} 
+                        style={{borderRadius: "5px"}} 
+                        size={30} 
                         icon={row.type === "expense" ? 
                           <ArrowUpOutlined style={{color: "var(--red-color)"}}/> : 
                           <ArrowDownOutlined style={{color: "var(--accent-color)"}}/>

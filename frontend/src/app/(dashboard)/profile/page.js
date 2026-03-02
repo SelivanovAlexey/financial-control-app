@@ -13,7 +13,7 @@ export default function Profile() {
   const isMobile = useMediaQuery(theme.breakpoints.down('768'));
 
   const dispatch = useDispatch();
-  const { isLoading, userError, user } = useSelector(state => state.user);
+  const { isLoading, userError, userInfo } = useSelector(state => state.user);
 
   if (isLoading) {
     return (
@@ -52,10 +52,10 @@ export default function Profile() {
 
           <div className={styles.user_info}>
             <div className={styles.user_input}>
-              <StyledInput label="Имя пользователя" style={{height: "100%", width: "100%", backgroundColor: "transparent", color: "var(--main-color)"}}/>
+              <StyledInput label="Имя пользователя" disabled value={userInfo.username} style={{height: "100%", width: "100%", backgroundColor: "transparent", color: "var(--main-color)"}}/>
             </div>
             <div className={styles.user_input}>
-              <StyledInput label="Email" style={{height: "100%", width: "100%", backgroundColor: "transparent", color: "var(--main-color)"}}/>
+              <StyledInput label="Email" value={userInfo.email} disabled style={{height: "100%", width: "100%", backgroundColor: "transparent", color: "var(--main-color)"}}/>
             </div>
           </div>
 
@@ -79,10 +79,10 @@ export default function Profile() {
 
           <div className={styles.user_info}>
             <div className={styles.user_input}>
-              <StyledInput label="Имя пользователя" style={{height: "100%", width: "100%", backgroundColor: "transparent", color: "var(--main-color)"}}/>
+              <StyledInput label="Имя пользователя" value={userInfo.username} disabled style={{height: "100%", width: "100%", backgroundColor: "transparent", color: "var(--main-color)"}}/>
             </div>
             <div className={styles.user_input}>
-              <StyledInput label="Email" style={{height: "100%", width: "100%", backgroundColor: "transparent", color: "var(--main-color)"}}/>
+              <StyledInput label="Email" value={userInfo.email} disabled style={{height: "100%", width: "100%", backgroundColor: "transparent", color: "var(--main-color)"}}/>
             </div>
           </div>
 

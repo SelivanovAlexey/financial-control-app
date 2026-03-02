@@ -44,40 +44,48 @@
 }
 
 .card_graph {
-    border-radius: 30px;
-    overflow-y: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; /* изменено с center на flex-start */
-    align-items: center;
-    background-color: var(--foreground);
-    grid-row: span 2 / auto;
-    width: 100%;
-    padding: 1rem;
-    height: 100%;
+  border-radius: 30px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--foreground);
+  grid-row: span 2;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
 }
 
 .card_graph_header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    width: 100%;
-    padding: 1rem 0 0 1rem;
-    font-size: calc(40px + 2vmin);
-    font-weight: bold;
-    flex-shrink: 0; /* предотвращает сжатие */
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  padding: 1rem 0 1rem 1rem;
+  font-size: calc(40px + 2vmin);
+  font-weight: bold;
+  flex-shrink: 0;
+  gap: 1rem;
 }
 
 .chart_container {
-    width: 100%;
-    height: 100%;
-    min-height: 300px;
-    flex: 1; /* занимает все доступное пространство */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: relative;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  position: relative;
+  overflow: hidden;
+}
+
+.no_data_placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--font-color);
+  font-size: calc(10px + 1vmin);
 }
 
 .card_header {
@@ -273,6 +281,7 @@
         text-align: center;
         margin: 0;
         padding: 5%;
+        padding-bottom: 10vh;
         display: grid;
         grid-template-columns: 1fr;
         grid-template-rows: auto auto auto;
@@ -284,22 +293,29 @@
 }
 
     .card_graph {
-    overflow-x: hidden;
-    min-height: 70vh;
-    max-height: 70vh;
-    }
-
-    .card_graph_header {
+    padding: 1rem;
+    height: 100%;
+  }
+  
+  .card_graph_header {
     padding: 0.5rem 0;
+    padding-left: 1vh;
     flex-direction: column;
-    }
+    gap: 0.5rem;
+  }
 
     .card_graph_header_title {
     margin-bottom: 0.5rem;
     }
 
+    .chart_container {
+    min-height: 260px;
+    pointer-events: none;
+  }
+
     .card {
-    min-height: 45vh;
+    height: 55vh;
+    padding: 1rem;
     }
 
     .card_header {
@@ -333,7 +349,7 @@
     }
 
     .collapse_category {
-        margin-left: 5%;
+        padding-left: 3%;
         font-weight: 500;
     }
 

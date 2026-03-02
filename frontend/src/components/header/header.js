@@ -1,12 +1,14 @@
 "use client";
 import React from "react";
 import styles from "./header.module.css";
+import { useEffect } from "react";
 import { Avatar, Box, IconButton, Menu, MenuItem, Tooltip, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "@/app/store";
 import { usePathname } from "next/navigation";
-import { userLogout } from "@/reducers/userReducer";
+import { fetchUserInfo, userLogout } from "@/reducers/userReducer";
 import { BarsOutlined, LeftOutlined } from "@ant-design/icons";
+import { useSelector } from "../../app/store";
 
 const userSettings = ['Личный кабинет','Выйти'];
 const pageSettings = ['Дашборд', 'История операций'];
@@ -19,6 +21,12 @@ const Header = () => {
     
     const pathname = usePathname();
     const isProfilePage = pathname === "/profile";
+
+    const {userInfo} = useSelector(state => state.user);
+
+    useEffect(() => {
+        dispatch(fetchUserInfo());
+    }, [dispatch]);
 
     const handleOpenBarMenu = (event) => {
         setBarItem(event.currentTarget);
@@ -85,7 +93,7 @@ const Header = () => {
                         visibility: isProfilePage ? { xs: "hidden", md: "visible" } : "visible"
                     }}
                 >
-                    Username
+                    {userInfo.displayName}
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Настройки">
                         <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>

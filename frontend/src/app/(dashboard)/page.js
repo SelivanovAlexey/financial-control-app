@@ -11,7 +11,7 @@ import Modal from '@mui/material/Modal';
 import IncomesModal from "@/components/modal/IncomesModal";
 import ExpensesModal from "@/components/modal/ExpensesModal";
 import { useDispatch, useSelector } from "../store";
-import { fetchExpenses, fetchIncomes } from "@/reducers/userReducer";
+import { fetchExpenses, fetchIncomes, fetchUserInfo } from "@/reducers/userReducer";
 import CircularProgress from '@mui/material/CircularProgress';
 import { useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -68,7 +68,7 @@ export default function Home() {
 
   // Показываем загрузку или ошибку
   if (isLoading) {
-    return <div style={{margin: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
+    return <div style={{margin: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh'}}>
       <CircularProgress size={100}/>
     </div>;
   }
@@ -86,64 +86,73 @@ export default function Home() {
               <div style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "start"}}>
                 {expensesAll.toLocaleString('ru-RU')} ₽
                 <div style={{width: "auto", fontSize: "calc(12px + 2vmin)", fontWeight: "normal"}}>
-                Траты</div>
+                  Траты
+                </div>
               </div>
             </div>
           ) : (
             <div style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "start"}}>
               {expensesAll.toLocaleString('ru-RU')} ₽
               <div style={{width: "auto", fontSize: "calc(8px + 2vmin)", fontWeight: "normal"}}>
-              Траты</div>
+                Траты
+              </div>
             </div>
           )}
-          <div style={isMobile ? {width: "100%"} : {}}>
-            <Paper
-              elevation={0}
-              sx={isMobile ? {
-                backgroundColor: "transparent",
-                justifyContent: 'end',
-              } :
-              {
-                backgroundColor: "transparent",
-              }}
-            >
-              <StyledToggleButtonGroup
-                value={period}
-                exclusive
-                onChange={handlePeriodChange}
-                aria-label="text alignment"
-                sx={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr'}}>
-                <ToggleButton value="left" aria-label="left aligned" sx={{ color: "var(--main-color)", '&.Mui-selected': { color: "var(--font-color)", backgroundColor: "var(--accent-color)", transition: 'all 0.3s ease-in-out', '&:hover': { backgroundColor: "var(--accent-color)"}}}}>
-                  Неделя
-                </ToggleButton>
-                <ToggleButton value="center" aria-label="centered" sx={{ color: "var(--main-color)", '&.Mui-selected': { color: "var(--font-color)", backgroundColor: "var(--accent-color)", transition: 'all 0.3s ease-in-out', '&:hover': { backgroundColor: "var(--accent-color)"}}}}>
-                  Месяц
-                </ToggleButton>
-                <ToggleButton value="right" aria-label="right aligned" sx={{ color: "var(--main-color)", '&.Mui-selected': { color: "var(--font-color)", backgroundColor: "var(--accent-color)", transition: 'all 0.3s ease-in-out', '&:hover': { backgroundColor: "var(--accent-color)"}}}}>
-                  Год
-                </ToggleButton>
-              </StyledToggleButtonGroup>
-            </Paper>
-          </div>
+          <Paper
+            elevation={0}
+            sx={{
+              backgroundColor: "transparent",
+              width: isMobile ? "100%" : "auto"
+            }}
+          >
+            <StyledToggleButtonGroup
+              value={period}
+              exclusive
+              onChange={handlePeriodChange}
+              aria-label="text alignment"
+              sx={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr'}}>
+              <ToggleButton value="left" aria-label="left aligned" sx={{ color: "var(--main-color)", '&.Mui-selected': { color: "var(--font-color)", backgroundColor: "var(--accent-color)", transition: 'all 0.3s ease-in-out', '&:hover': { backgroundColor: "var(--accent-color)"}}}}>
+                Неделя
+              </ToggleButton>
+              <ToggleButton value="center" aria-label="centered" sx={{ color: "var(--main-color)", '&.Mui-selected': { color: "var(--font-color)", backgroundColor: "var(--accent-color)", transition: 'all 0.3s ease-in-out', '&:hover': { backgroundColor: "var(--accent-color)"}}}}>
+                Месяц
+              </ToggleButton>
+              <ToggleButton value="right" aria-label="right aligned" sx={{ color: "var(--main-color)", '&.Mui-selected': { color: "var(--font-color)", backgroundColor: "var(--accent-color)", transition: 'all 0.3s ease-in-out', '&:hover': { backgroundColor: "var(--accent-color)"}}}}>
+                Год
+              </ToggleButton>
+            </StyledToggleButtonGroup>
+          </Paper>
         </div>
         <div className={styles.chart_container}>
           {expensesByCategory.length > 0 ? (
             <PieChart
+              series={[
+                {
+                  data: expensesByCategory,
+                  startAngle: -270,
+                  endAngle: 90,
+                  innerRadius: isMobile ? "60%" : "70%",
+                  outerRadius: isMobile ? "80%" : "90%",
+                  paddingAngle: 2,
+                  cornerRadius: 3,
+                  highlightScope: { fade: 'global', highlight: 'item' },
+                  arcLabel: (item) => expensesAll > 0 ? `${(item.value / expensesAll * 100).toFixed(0)}%` : '0%',
+                  arcLabelRadius: isMobile ? "100%" : "100%",
+                }
+              ]}
               slotProps={{
                 legend: {
                   sx: {
                     width: "100%",
-                    display: "flex",
+                    display: "flex !important",
                     justifyContent: "center",
                     color: "var(--font-color)",
-                    fontSize: isMobile ? "12px" : "14px",
-                    padding: isMobile ? "0.5rem" : "2rem",
+                    fontSize: isMobile ? "11px" : "13px",
+                    padding: isMobile ? "12px 8px 8px" : "20px 8px 8px",
+                    margin: "0 !important",
                   },
                   direction: 'horizontal',
-                  position: { 
-                    vertical: 'bottom',
-                    horizontal: 'center'
-                  }
+                  position: { vertical: 'bottom', horizontal: 'center' }
                 }
               }}
               sx={{
@@ -152,38 +161,16 @@ export default function Home() {
                 [`& .${pieArcLabelClasses.root}`]: {
                   fontWeight: 'bold',
                   fill: 'var(--font-color)',
-                  fontSize: isMobile ? '14px' : '18px'
+                  fontSize: isMobile ? '12px' : '16px'
                 },
                 '& .MuiPieArc-root, & .MuiPieArc-highlighted': {
                   stroke: 'transparent',
                   strokeWidth: 0,
                 }
               }}
-              series={[
-                {
-                  data: expensesByCategory,
-                  startAngle: -270,
-                  endAngle: 90,
-                  innerRadius: isMobile ? "75%" : "80%",
-                  outerRadius: isMobile ? "100%" : "100%",
-                  paddingAngle: 5,
-                  cornerRadius: 5,
-                  highlightScope: { fade: 'global', highlight: 'item' },
-                  arcLabelRadius: isMobile ? "50%" : "60%",
-                  arcLabel: (item) => expensesAll > 0 ? `${(item.value / expensesAll * 100).toFixed(2)} %` : '0%',
-                  
-                }
-              ]}
             />
           ) : (
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              height: '100%',
-              color: 'var(--font-color)',
-              fontSize: 'calc(10px + 1vmin)'
-            }}>
+            <div className={styles.no_data_placeholder}>
               Нет данных о расходах
             </div>
           )}

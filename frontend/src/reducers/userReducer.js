@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { loginUser, logoutUser, signUpUser, getAllExpenses, getAllIncomes, createExpense, createIncome, deleteExpense, deleteIncome } from "../api/authApi";
+import { loginUser, logoutUser, signUpUser, getAllExpenses, getAllIncomes, createExpense, createIncome, deleteExpense, deleteIncome, getCurrentUser } from "../api/authApi";
 
 export const userLogin = createAsyncThunk(
   'user/loginUser',
@@ -36,6 +36,19 @@ export const userSignUp = createAsyncThunk(
     }
   }
 );
+
+export const fetchUserInfo = createAsyncThunk(
+  'user/getCurrentUser',
+  async () => {
+    const response = await getCurrentUser();
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    } else {
+      throw new Error('Failed to get user info');
+    }
+  }
+)
 
 export const fetchExpenses = createAsyncThunk(
   'expenses/fetchExpenses',
@@ -175,6 +188,7 @@ export const checkAuth = createAsyncThunk(
 
 const initialState = {
   userRequest: false,
+  userInfo: null,
   expenses: [],
   incomes: [],
   userError: null,
@@ -206,6 +220,7 @@ const userSlice = createSlice({
       })
       .addCase(userLogin.fulfilled, (state, action) => {
         state.isAuthenticated = true;
+        state.userInfo = action.payload;
         state.userRequest = false;
         state.userError = null;
         state.isAuthChecked = true;
@@ -224,6 +239,7 @@ const userSlice = createSlice({
       })
       .addCase(userLogout.fulfilled, (state) => {
         state.isAuthenticated = false;
+        state.userInfo = null;
         state.userRequest = false;
         state.userError = null;
         state.isAuthChecked = true;
@@ -240,7 +256,8 @@ const userSlice = createSlice({
         state.userError = null;
         state.isLoading = true;
       })
-      .addCase(userSignUp.fulfilled, (state) => {
+      .addCase(userSignUp.fulfilled, (state, action) => {
+        state.userInfo = action.payload;
         state.isAuthenticated = true;
         state.userRequest = false;
         state.userError = null;
@@ -252,6 +269,27 @@ const userSlice = createSlice({
         state.userRequest = false;
         state.userError = action.error.message || 'Registration failed.';
         state.isLoading = false;
+      })
+
+      .addCase(fetchUserInfo.pending, (state) => {
+        state.isLoading = true;
+        state.userError = null;
+      })
+      .addCase(fetchUserInfo.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.userInfo = action.payload;
+        state.userError = null;
+      })
+      .addCase(fetchUserInfo.rejected, (state, action) => {
+        state.isLoading = false;
+        const errorMessage = action.payload || action.error.message;
+        if (errorMessage === 'Unauthorized') {
+          state.isAuthenticated = false;
+          state.userDisplayName = null;
+          state.userError = null;
+        } else {
+          state.userError = errorMessage || 'Failed to fetch user info';
+        }
       })
 
       .addCase(fetchExpenses.pending, (state) => {
