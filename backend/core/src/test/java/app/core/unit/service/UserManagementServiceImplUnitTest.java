@@ -11,6 +11,7 @@ import app.core.service.UserManagementServiceImpl;
 import app.core.errorhandling.exceptions.UserAlreadyExistsException;
 import app.core.unit.utils.TestUtils;
 import jakarta.persistence.EntityNotFoundException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -19,9 +20,12 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -86,7 +90,7 @@ class UserManagementServiceImplUnitTest {
         UserEntity savedEntity = createUserEntity(1L, "testUserDisplayName", "testuser", "hashedPassword", "test@email.com");
         UserResponseDto expectedResponse = createUserResponse(1L, "testUserDisplayName", "testuser", "test@email.com");
 
-        when(userRepository.findByUsername(request.username())).thenReturn(Optional.empty());
+        when(userRepository.existsByUsername(request.username())).thenReturn(false);
         when(userMapper.createUserFromRequest(request, passwordEncoder)).thenReturn(mappedEntity);
         when(userRepository.save(any(UserEntity.class))).thenReturn(savedEntity);
         when(userMapper.toResponse(savedEntity)).thenReturn(expectedResponse);
@@ -97,7 +101,7 @@ class UserManagementServiceImplUnitTest {
         // Then
         assertThat(result).isEqualTo(expectedResponse);
 
-        verify(userRepository).findByUsername(request.username());
+        verify(userRepository).existsByUsername(request.username());
         verify(userMapper).createUserFromRequest(request, passwordEncoder);
         verify(userRepository).save(argThat(entity -> {
             assertThat(entity.getUsername()).isEqualTo("testuser");
@@ -114,14 +118,63 @@ class UserManagementServiceImplUnitTest {
         // Given
         CreateUserRequestDto request = createUserRequest("testuser", "password123", "test@email.com");
 
-        when(userRepository.findByUsername(request.username())).thenReturn(Optional.of(testUser));
+        when(userRepository.existsByUsername(request.username())).thenReturn(true);
 
         // When & Then
         assertThatThrownBy(() -> userManagementService.createUser(request))
                 .isInstanceOf(UserAlreadyExistsException.class)
                 .hasMessage("User with username 'testuser' already exists");
 
-        verify(userRepository).findByUsername(request.username());
+        verify(userRepository).existsByUsername(request.username());
+        verifyNoMoreInteractions(userRepository, userMapper);
+    }
+
+    @Order(3)
+    @Test
+    @DisplayName("Should throw UserAlreadyExistsException when user with same username exists (race check)")
+    void shouldThrowUserAlreadyExistsExceptionWhenUserExistsRaceCheck() {
+        // Given
+        CreateUserRequestDto request = createUserRequest("testuser", "password123", "test@email.com");
+        UserEntity mappedEntity = createUserEntity(null, "testUserDisplayName", "testuser", "hashedPassword", "test@email.com");
+
+        when(userRepository.existsByUsername(request.username())).thenReturn(false);
+        when(userMapper.createUserFromRequest(request, passwordEncoder)).thenReturn(mappedEntity);
+        when(userRepository.save(any(UserEntity.class)))
+                .thenThrow(new DataIntegrityViolationException("msg", new ConstraintViolationException("msg", null, "uq_users_username")));
+
+        // When & Then
+        assertThatThrownBy(() -> userManagementService.createUser(request))
+                .isInstanceOf(UserAlreadyExistsException.class)
+                .hasMessage("User with username 'testuser' already exists");
+
+        verify(userRepository).existsByUsername(request.username());
+        verify(userMapper).createUserFromRequest(request, passwordEncoder);
+        verify(userRepository).save(any());
+        verify(userMapper, never()).toResponse(any());
+    }
+
+    @Order(4)
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = "other_constraint")
+    @DisplayName("Should throw default 'Data violation on database' message")
+    void shouldThrowDefaultDataIntegrityViolationMessage(String constraintName) {
+        // Given
+        CreateUserRequestDto request = createUserRequest("testuser", "password123", "test@email.com");
+        UserEntity mappedEntity = createUserEntity(null, "testUserDisplayName", "testuser", "hashedPassword", "test@email.com");
+
+        when(userRepository.existsByUsername(request.username())).thenReturn(false);
+        when(userMapper.createUserFromRequest(request, passwordEncoder)).thenReturn(mappedEntity);
+        Exception ex = new DataIntegrityViolationException("msg", new ConstraintViolationException("msg", null, constraintName));
+        when(userRepository.save(any(UserEntity.class)))
+                .thenThrow(ex);
+
+        // When & Then
+        assertThatThrownBy(() -> userManagementService.createUser(request))
+                .isSameAs(ex);
+
+        verify(userRepository).existsByUsername(request.username());
+        verify(userMapper).createUserFromRequest(request, passwordEncoder);
         verifyNoMoreInteractions(userRepository, userMapper);
     }
 
@@ -129,7 +182,7 @@ class UserManagementServiceImplUnitTest {
        GET USER
        ======================= */
 
-    @Order(3)
+    @Order(5)
     @Test
     @DisplayName("Should get current user successfully")
     void shouldGetCurrentUserSuccessfully() {
@@ -151,7 +204,7 @@ class UserManagementServiceImplUnitTest {
         verify(userMapper).toResponse(testUser);
     }
 
-    @Order(4)
+    @Order(6)
     @Test
     @DisplayName("Should get user by id successfully when user has access")
     void shouldGetUserByIdSuccessfully() {
@@ -175,20 +228,17 @@ class UserManagementServiceImplUnitTest {
        UPDATE USER
        ======================= */
 
-    @Order(5)
+    @Order(7)
     @Test
     @DisplayName("Should update current user successfully")
     void shouldUpdateCurrentUserSuccessfully() {
         // Given
         UpdateUserRequestDto updateRequest = createUpdateUserRequest("newPassword123", "newPassword123", "New Display Name", "new@email.com");
-
-        UserEntity updatedUser = createUserEntity(1L, "New Display Name", "testuser", "newHashedPassword", "new@email.com");
         UserResponseDto expectedResponse = createUserResponse(1L, "New Display Name", "testuser", "new@email.com");
 
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
         when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
-        when(userRepository.save(testUser)).thenReturn(updatedUser);
-        when(userMapper.toResponse(updatedUser)).thenReturn(expectedResponse);
+        when(userMapper.toResponse(testUser)).thenReturn(expectedResponse);
 
         // When
         UserResponseDto result = userManagementService.updateCurrentUser(updateRequest);
@@ -199,11 +249,11 @@ class UserManagementServiceImplUnitTest {
         verify(userRepository).findById(testUser.getId());
         verify(securityProvider).checkAccess(testUser.getId(), testUser.getId());
         verify(userMapper).updateUserFromRequest(updateRequest, testUser, passwordEncoder);
-        verify(userRepository).save(testUser);
+        verify(userRepository, never()).save(any());
         //TODO: verify(securityProvider).logout(testUser);
     }
 
-    @Order(6)
+    @Order(8)
     @Test
     @DisplayName("Should update user by id successfully when user has access")
     void shouldUpdateUserByIdSuccessfully() {
@@ -211,13 +261,11 @@ class UserManagementServiceImplUnitTest {
         Long userId = 1L;
         UpdateUserRequestDto updateRequest = createUpdateUserRequest(null, null, "New Display Name", "new@email.com");
 
-        UserEntity updatedUser = createUserEntity(1L, "New Display Name", "testuser", "hashedPassword", "new@email.com");
         UserResponseDto expectedResponse = createUserResponse(1L, "New Display Name", "testuser", "new@email.com");
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
-        when(userRepository.save(testUser)).thenReturn(updatedUser);
-        when(userMapper.toResponse(updatedUser)).thenReturn(expectedResponse);
+        when(userMapper.toResponse(testUser)).thenReturn(expectedResponse);
 
         // When
         UserResponseDto result = userManagementService.updateUser(userId, updateRequest);
@@ -226,14 +274,15 @@ class UserManagementServiceImplUnitTest {
         assertThat(result).isEqualTo(expectedResponse);
         verify(securityProvider).checkAccess(testUser.getId(), testUser.getId());
         verify(userMapper).updateUserFromRequest(updateRequest, testUser, passwordEncoder);
-        verify(userRepository).save(testUser);
+        verify(userRepository, never()).save(any());
+
     }
 
     /* =======================
        DELETE USER
        ======================= */
 
-    @Order(7)
+    @Order(9)
     @Test
     @DisplayName("Should delete current user successfully")
     void shouldDeleteCurrentUserSuccessfully() {
@@ -251,7 +300,7 @@ class UserManagementServiceImplUnitTest {
         verify(userRepository).deleteById(testUser.getId());
     }
 
-    @Order(8)
+    @Order(10)
     @Test
     @DisplayName("Should delete user by id successfully when user has access")
     void shouldDeleteUserByIdSuccessfully() {
@@ -273,7 +322,7 @@ class UserManagementServiceImplUnitTest {
        EXCEPTIONS
        ======================= */
 
-    @Order(9)
+    @Order(11)
     @Test
     @DisplayName("Should throw exception when security context returns null user on get current")
     void shouldThrowExceptionWhenSecurityContextUserIsNullOnGetCurrent() {
@@ -287,7 +336,7 @@ class UserManagementServiceImplUnitTest {
         verifyNoInteractions(userRepository);
     }
 
-    @Order(10)
+    @Order(12)
     @ParameterizedTest
     @EnumSource(value = TestUtils.Operation.class, names = {"GET", "UPDATE", "DELETE"})
     @DisplayName("Should throw EntityNotFoundException for non-existent user")
@@ -301,7 +350,7 @@ class UserManagementServiceImplUnitTest {
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
-    @Order(11)
+    @Order(13)
     @ParameterizedTest
     @EnumSource(value = TestUtils.Operation.class, names = {"GET", "UPDATE", "DELETE"})
     @DisplayName("Should throw AccessDeniedException when accessing another user")
@@ -324,7 +373,7 @@ class UserManagementServiceImplUnitTest {
    PARTIAL UPDATE/CREATE TESTS
    ======================= */
 
-    @Order(12)
+    @Order(14)
     @Test
     @DisplayName("Should create user with generated displayName when displayName not provided")
     void shouldCreateUserWithGeneratedDisplayName() {
@@ -341,7 +390,7 @@ class UserManagementServiceImplUnitTest {
         UserEntity savedEntity = createUserEntity(1L, "testuser", "testuser", "hashedPassword", "test@email.com");
         UserResponseDto expectedResponse = createUserResponse(1L, "testuser", "testuser", "test@email.com");
 
-        when(userRepository.findByUsername(request.username())).thenReturn(Optional.empty());
+        when(userRepository.existsByUsername(request.username())).thenReturn(false);
         when(userMapper.createUserFromRequest(request, passwordEncoder)).thenReturn(mappedEntity);
         when(userRepository.save(any(UserEntity.class))).thenReturn(savedEntity);
         when(userMapper.toResponse(savedEntity)).thenReturn(expectedResponse);
@@ -354,7 +403,7 @@ class UserManagementServiceImplUnitTest {
         verify(userMapper).createUserFromRequest(request, passwordEncoder);
     }
 
-    @Order(13)
+    @Order(15)
     @Test
     @DisplayName("Should update only email when other fields are null")
     void shouldUpdateOnlyEmail() {
@@ -366,13 +415,11 @@ class UserManagementServiceImplUnitTest {
                 .build();
 
         UserEntity existingUser = createUserEntity(1L, "Old Display Name", "testuser", "oldPassword", "old@email.com");
-        UserEntity updatedUser = createUserEntity(1L, "Old Display Name", "testuser", "oldPassword", "new@email.com");
         UserResponseDto expectedResponse = createUserResponse(1L, "Old Display Name", "testuser", "new@email.com");
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
-        when(userRepository.save(existingUser)).thenReturn(updatedUser);
-        when(userMapper.toResponse(updatedUser)).thenReturn(expectedResponse);
+        when(userMapper.toResponse(existingUser)).thenReturn(expectedResponse);
 
         // When
         UserResponseDto result = userManagementService.updateUser(userId, updateRequest);
@@ -380,11 +427,12 @@ class UserManagementServiceImplUnitTest {
         // Then
         assertThat(result).isEqualTo(expectedResponse);
         verify(userMapper).updateUserFromRequest(updateRequest, existingUser, passwordEncoder);
-        verify(userRepository).save(existingUser);
         verify(securityProvider).getUserFromSecurityContext();
+        verify(userRepository, never()).save(any());
+
     }
 
-    @Order(14)
+    @Order(16)
     @Test
     @DisplayName("Should update only displayName when other fields are null")
     void shouldUpdateOnlyDisplayName() {
@@ -396,13 +444,11 @@ class UserManagementServiceImplUnitTest {
                 .build();
 
         UserEntity existingUser = createUserEntity(1L, "Old Display Name", "testuser", "oldPassword", "old@email.com");
-        UserEntity updatedUser = createUserEntity(1L, "New Display Name", "testuser", "oldPassword", "old@email.com");
         UserResponseDto expectedResponse = createUserResponse(1L, "New Display Name", "testuser", "old@email.com");
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
-        when(userRepository.save(existingUser)).thenReturn(updatedUser);
-        when(userMapper.toResponse(updatedUser)).thenReturn(expectedResponse);
+        when(userMapper.toResponse(existingUser)).thenReturn(expectedResponse);
 
         // When
         UserResponseDto result = userManagementService.updateUser(userId, updateRequest);
@@ -410,11 +456,12 @@ class UserManagementServiceImplUnitTest {
         // Then
         assertThat(result).isEqualTo(expectedResponse);
         verify(userMapper).updateUserFromRequest(updateRequest, existingUser, passwordEncoder);
-        verify(userRepository).save(existingUser);
         verify(securityProvider).getUserFromSecurityContext();
+        verify(userRepository, never()).save(any());
+
     }
 
-    @Order(15)
+    @Order(17)
     @Test
     @DisplayName("Should update only password and trigger auth context update")
     void shouldUpdateOnlyPasswordAndTriggerAuthUpdate() {
@@ -427,13 +474,11 @@ class UserManagementServiceImplUnitTest {
                 .build();
 
         UserEntity existingUser = createUserEntity(1L, "Display Name", "testuser", "oldPassword", "test@email.com");
-        UserEntity updatedUser = createUserEntity(1L, "Display Name", "testuser", "newHashedPassword", "test@email.com");
         UserResponseDto expectedResponse = createUserResponse(1L, "Display Name", "testuser", "test@email.com");
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
         when(securityProvider.getUserFromSecurityContext()).thenReturn(testUser);
-        when(userRepository.save(existingUser)).thenReturn(updatedUser);
-        when(userMapper.toResponse(updatedUser)).thenReturn(expectedResponse);
+        when(userMapper.toResponse(existingUser)).thenReturn(expectedResponse);
 
         // When
         UserResponseDto result = userManagementService.updateUser(userId, updateRequest);
@@ -441,12 +486,12 @@ class UserManagementServiceImplUnitTest {
         // Then
         assertThat(result).isEqualTo(expectedResponse);
         verify(userMapper).updateUserFromRequest(updateRequest, existingUser, passwordEncoder);
-        verify(userRepository).save(existingUser);
+        verify(userRepository, never()).save(any());
         //TODO: verify(securityProvider).logout(testUser);
         verify(securityProvider).getUserFromSecurityContext();
     }
 
-    @Order(16)
+    @Order(18)
     @Test
     @DisplayName("Should throw EntityNotFoundException when deleting non-existent user")
     void shouldThrowEntityNotFoundExceptionWhenDeletingNonExistentUser() {
@@ -467,7 +512,8 @@ class UserManagementServiceImplUnitTest {
     private void executeOperation(TestUtils.Operation operation, Long userId) {
         switch (operation) {
             case GET -> userManagementService.getUser(userId);
-            case UPDATE -> userManagementService.updateUser(userId, createUpdateUserRequest(null, null, "New Name", "new@email.com"));
+            case UPDATE ->
+                    userManagementService.updateUser(userId, createUpdateUserRequest(null, null, "New Name", "new@email.com"));
             case DELETE -> userManagementService.deleteUser(userId);
         }
     }

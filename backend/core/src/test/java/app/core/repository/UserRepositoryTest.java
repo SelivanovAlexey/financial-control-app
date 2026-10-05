@@ -11,7 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
 @DisplayName("UserRepository Tests")
@@ -75,9 +75,43 @@ class UserRepositoryTest {
         user2.setEmail("user2@example.com");
 
         // When & Then
-        assertThrows(Exception.class, () -> {
+        assertThatThrownBy(() -> {
             entityManager.persist(user2);
             entityManager.flush();
-        });
+        })
+                .isInstanceOf(org.hibernate.exception.ConstraintViolationException.class)
+                .extracting(e -> ((org.hibernate.exception.ConstraintViolationException) e).getConstraintName())
+                .isEqualTo("uq_users_username");
+    }
+
+    @Test
+    @DisplayName("Should return true when user with username exists")
+    void shouldReturnTrueWhenUsernameExists() {
+        // Given
+        UserEntity user = new UserEntity();
+        user.setDisplayName("Test User");
+        user.setUsername("testuser");
+        user.setPassword("hashedPassword");
+        entityManager.persistAndFlush(user);
+
+        // When & Then
+        assertThat(userRepository.existsByUsername("testuser")).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should return false when user with username does not exist")
+    void shouldReturnFalseWhenUsernameDoesNotExist() {
+        assertThat(userRepository.existsByUsername("nonexistentuser")).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should be case-sensitive")
+    void shouldBeCaseSensitive() {
+        UserEntity user = new UserEntity();
+        user.setUsername("TestUser");
+        user.setPassword("hashedPassword");
+        entityManager.persistAndFlush(user);
+
+        assertThat(userRepository.existsByUsername("testuser")).isFalse();
     }
 }
