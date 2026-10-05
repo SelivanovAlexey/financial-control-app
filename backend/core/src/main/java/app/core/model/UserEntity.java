@@ -10,9 +10,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class UserEntity implements UserDetails {
 
     @Id

@@ -16,6 +16,10 @@
         <relativePath/>
     </parent>
 
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+
     <modules>
         <module>dependency-bom</module>
         <module>core</module>

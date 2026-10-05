@@ -30,6 +30,7 @@ public abstract class TransactionBaseEntity {
     @Column(name = "description")
     protected String description;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
     protected UserEntity user;
 }

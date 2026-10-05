@@ -1,21 +1,18 @@
 package app.core.model.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 
 @Builder
 @Schema(description = "dto.user.create.request.description")
 public record CreateUserRequestDto(
         @Schema(description = "dto.user.username.description", example = "johndoe")
-        @NotNull
+        @NotBlank @Size(max = 128)
         String username,
 
         @Schema(description = "dto.user.password.description", example = "password123", minLength = 4)
-        @NotNull @Size(min = 4)
+        @NotNull @Size(min = 4, max = 72)
         String password,
 
         @Schema(description = "dto.user.confirmPassword.description", example = "password123")
