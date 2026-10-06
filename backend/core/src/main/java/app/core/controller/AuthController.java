@@ -1,11 +1,11 @@
 package app.core.controller;
 
+import app.core.api.AuthService;
+import app.core.api.UserManagementService;
 import app.core.errorhandling.model.CommonExceptionJson;
 import app.core.errorhandling.model.ValidationExceptionJson;
 import app.core.model.dto.AuthRequestDto;
 import app.core.model.dto.CreateUserRequestDto;
-import app.core.service.AuthServiceImpl;
-import app.core.service.UserManagementServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,8 +29,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 @Tag(name = "api.auth.tag", description = "api.auth.tag.description")
 public class AuthController {
-    private final AuthServiceImpl authService;
-    private final UserManagementServiceImpl userManagementService;
+    private final AuthService authService;
+    private final UserManagementService userManagementService;
 
     @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "api.auth.login")

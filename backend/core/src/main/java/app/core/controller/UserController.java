@@ -4,6 +4,7 @@ import app.core.api.UserManagementService;
 import app.core.errorhandling.exceptions.MethodNotSupportedException;
 import app.core.errorhandling.model.CommonExceptionJson;
 import app.core.errorhandling.model.ValidationExceptionJson;
+import app.core.model.UserEntity;
 import app.core.model.dto.*;
 import app.core.security.SecurityProvider;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,12 +13,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -42,8 +43,8 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "error.internal.server",
                     content = @Content(schema = @Schema(implementation = CommonExceptionJson.class)))
     })
-    public ResponseEntity<UserResponseDto> get() {
-        return ResponseEntity.ok(userManagementService.getCurrentUser());
+    public ResponseEntity<UserResponseDto> get(@AuthenticationPrincipal UserEntity currentUser) {
+        return ResponseEntity.ok(userManagementService.getUser(currentUser.getId()));
     }
 
     //TODO: to implement??
@@ -84,10 +85,11 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "error.internal.server",
                     content = @Content(schema = @Schema(implementation = CommonExceptionJson.class)))
     })
-    public ResponseEntity<UserResponseDto> update(@Valid @RequestBody UpdateUserRequestDto updateUserRequest,
+    public ResponseEntity<UserResponseDto> update(@AuthenticationPrincipal UserEntity currentUser,
+                                                  @Valid @RequestBody UpdateUserRequestDto updateUserRequest,
                                                   HttpServletRequest request,
-                                                  HttpServletResponse response) throws ServletException {
-        UserResponseDto responseDto = userManagementService.updateCurrentUser(updateUserRequest);
+                                                  HttpServletResponse response) {
+        UserResponseDto responseDto = userManagementService.updateUser(currentUser.getId(), updateUserRequest);
         if (updateUserRequest.password() != null) {
             securityProvider.logout(request, response);
         }

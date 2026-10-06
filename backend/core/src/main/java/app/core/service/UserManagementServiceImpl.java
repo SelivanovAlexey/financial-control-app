@@ -1,7 +1,6 @@
 package app.core.service;
 
 import app.core.errorhandling.utils.ConstraintViolations;
-import app.core.security.SecurityProvider;
 import app.core.api.UserManagementService;
 import app.core.errorhandling.exceptions.UserAlreadyExistsException;
 import app.core.mappers.UserMapper;
@@ -14,13 +13,9 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 //TODO: че как много transactional?
 @Slf4j
@@ -30,11 +25,10 @@ public class UserManagementServiceImpl implements UserManagementService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-    private final SecurityProvider securityProvider;
 
 
     @Override
-    public UserResponseDto createUser(CreateUserRequestDto newUser) throws UserAlreadyExistsException {
+    public UserResponseDto createUser(CreateUserRequestDto newUser) {
         if (userRepository.existsByUsername(newUser.username())) {
             throw new UserAlreadyExistsException("User with username '" + newUser.username() + "' already exists");
         }
@@ -55,38 +49,18 @@ public class UserManagementServiceImpl implements UserManagementService {
     }
 
     @Override
-    @Transactional
-    public void deleteCurrentUser() {
-        deleteUser(securityProvider.getUserFromSecurityContext().getId());
-    }
-
-    @Override
-    @Transactional
-    public UserResponseDto updateCurrentUser(UpdateUserRequestDto userToUpdate) throws UsernameNotFoundException {
-        return updateUser(securityProvider.getUserFromSecurityContext().getId(), userToUpdate);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public UserResponseDto getCurrentUser() {
-        return getUser(securityProvider.getUserFromSecurityContext().getId());
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public UserResponseDto getUser(Long userId) {
         UserEntity user = userRepository
                 .findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id: " + userId + " is not found!"));
-        securityProvider.checkAccess(userId, securityProvider.getUserFromSecurityContext().getId());
         return userMapper.toResponse(user);
     }
 
     @Override
     @Transactional
-    public UserResponseDto updateUser(Long userId, UpdateUserRequestDto userToUpdate) throws UsernameNotFoundException {
+    public UserResponseDto updateUser(Long userId, UpdateUserRequestDto userToUpdate) {
         UserEntity userEntity = userRepository
                 .findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id: " + userId + " is not found!"));
-        securityProvider.checkAccess(userId, securityProvider.getUserFromSecurityContext().getId());
         userMapper.updateUserFromRequest(userToUpdate, userEntity, passwordEncoder);
         log.debug("User {} successfully updated", userEntity.getId());
         return userMapper.toResponse(userEntity);
@@ -97,9 +71,7 @@ public class UserManagementServiceImpl implements UserManagementService {
     public void deleteUser(Long userId) {
         UserEntity user = userRepository
                 .findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id: " + userId + " is not found!"));
-        securityProvider.checkAccess(userId, securityProvider.getUserFromSecurityContext().getId());
-        userRepository.deleteById(userId);
-        SecurityContextHolder.clearContext();
+        userRepository.delete(user);
         log.debug("User {} successfully deleted", userId);
     }
 }
