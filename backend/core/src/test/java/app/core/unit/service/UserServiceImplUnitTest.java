@@ -30,13 +30,13 @@ class UserServiceImplUnitTest {
     @InjectMocks
     private UserServiceImpl userService;
 
-    private final UserEntity testUser = new UserEntity(
-            1L,
-            "testUserDisplayName",
-            "testuser",
-            "hashedPassword",
-            "test@email.com"
-    );
+    private final UserEntity testUser = UserEntity.builder()
+            .id(1L)
+            .displayName("testUserDisplayName")
+            .username("testuser")
+            .password("hashedPassword")
+            .email("test@email.com")
+            .build();
 
     @Order(1)
     @Test

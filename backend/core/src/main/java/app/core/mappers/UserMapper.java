@@ -13,13 +13,14 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "password",expression = "java(passwordEncoder.encode(request.password()))")
     @Mapping(target = "displayName", expression = "java(request.displayName() == null || request.displayName().isBlank() ? request.username() : request.displayName())")
-    @Mapping(target = "authorities", ignore = true)
+    @Mapping(target = "version", ignore = true)
     UserEntity createUserFromRequest(CreateUserRequestDto request, @Context PasswordEncoder passwordEncoder);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "username", ignore = true)
     @Mapping(target = "password", expression = "java(request.password() == null ? user.getPassword() : passwordEncoder.encode(request.password()))")
     @Mapping(target = "authorities", ignore = true)
+    @Mapping(target = "version", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateUserFromRequest(UpdateUserRequestDto request, @MappingTarget UserEntity user, @Context PasswordEncoder passwordEncoder);
 

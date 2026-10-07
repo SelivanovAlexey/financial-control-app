@@ -8,10 +8,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+
+//TODO: make not to implement UserDetails. Move it to separate class.
 @Entity
 @Table(name = "users")
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 @Getter
 @Setter
 public class UserEntity implements UserDetails {
@@ -28,6 +31,8 @@ public class UserEntity implements UserDetails {
     private String password;
     @Column(name = "email", length = 128)
     private String email;
+    @Version
+    private Integer version;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

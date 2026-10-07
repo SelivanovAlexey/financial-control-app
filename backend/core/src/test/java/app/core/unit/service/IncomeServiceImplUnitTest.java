@@ -57,21 +57,21 @@ class IncomeServiceImplUnitTest {
     private final OffsetDateTime testDate =
             OffsetDateTime.parse("2024-01-01T10:00:00Z");
 
-    private final UserEntity testUser = new UserEntity(
-            1L,
-            "testUserDisplayName",
-            "testuser",
-            "hashedPassword",
-            "test@email.com"
-    );
+    private final UserEntity testUser = UserEntity.builder()
+            .id(1L)
+            .displayName("testUserDisplayName")
+            .username("testuser")
+            .password("hashedPassword")
+            .email("test@email.com")
+            .build();
 
-    private final UserEntity otherUser = new UserEntity(
-            2L,
-            "otherUserDisplayName",
-            "otheruser",
-            "otherHashedPassword",
-            "other@email.com"
-    );
+    private final UserEntity otherUser = UserEntity.builder()
+            .id(2L)
+            .displayName("otherUserDisplayName")
+            .username("otheruser")
+            .password("otherHashedPassword")
+            .email("other@email.com")
+            .build();
 
     /* =======================
        CREATE

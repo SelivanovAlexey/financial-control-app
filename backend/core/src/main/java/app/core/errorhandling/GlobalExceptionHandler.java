@@ -8,6 +8,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -90,6 +91,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({HttpRequestMethodNotSupportedException.class, MethodNotSupportedException.class})
     public ResponseEntity<CommonExceptionJson> httpRequestMethodNotSupportedExceptionHandler(Exception e) {
         return buildResponse(HttpStatus.METHOD_NOT_ALLOWED, "There is no such http method", e);
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<CommonExceptionJson> optimisticLockExceptionHandler(Exception e) {
+        return buildResponse(HttpStatus.CONFLICT, "Data is outdated. Please, retry operation", e);
     }
 
     @ExceptionHandler(Exception.class)

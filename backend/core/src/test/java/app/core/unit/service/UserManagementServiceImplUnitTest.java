@@ -52,13 +52,13 @@ class UserManagementServiceImplUnitTest {
     @InjectMocks
     private UserManagementServiceImpl userManagementService;
 
-    private final UserEntity testUser = new UserEntity(
-            1L,
-            "testUserDisplayName",
-            "testuser",
-            "hashedPassword",
-            "test@email.com"
-    );
+    private final UserEntity testUser = UserEntity.builder()
+            .id(1L)
+            .displayName("testUserDisplayName")
+            .username("testuser")
+            .password("hashedPassword")
+            .email("test@email.com")
+            .build();
 
     /* =======================
        CREATE USER
@@ -283,7 +283,14 @@ class UserManagementServiceImplUnitTest {
     }
 
     private UserEntity createUserEntity(Long id) {
-        return new UserEntity(id, "testUserDisplayName", "testuser", "hashedPassword", "test@email.com");
+        return UserEntity.builder()
+                .id(id)
+                .displayName("testUserDisplayName")
+                .username("testuser")
+                .password("hashedPassword")
+                .email("test@email.com")
+                .build();
+
     }
 
     private UserResponseDto createUserResponse(String displayName, String email) {
